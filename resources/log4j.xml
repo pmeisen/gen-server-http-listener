@@ -33,12 +33,7 @@
   <!-- Limit loggers    -->
   <!-- ================ -->
   <logger name="org.springframework">
-    <level value="INFO"/>
-    <appender-ref ref="CONSOLE"/>
-  </logger>
-  <logger name="net.meisen.general.server.http.listener">
-    <level value="TRACE"/>
-    <appender-ref ref="CONSOLE"/>
+    <level value="WARN" />
   </logger>
 
    <!-- ======================= -->
