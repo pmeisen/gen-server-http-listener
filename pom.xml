@@ -5,7 +5,7 @@
   
   <groupId>net.meisen.general</groupId>
   <artifactId>net-meisen-general-server-http-listener</artifactId>
-  <version>1.0.0</version>
+  <version>TRUNK</version>
   <name>gen-server-http-listener</name>
   <description>General HTTP Listener implementation for the gen-server</description>
   <packaging>jar</packaging>
@@ -14,12 +14,12 @@
     <dependency>
       <groupId>net.meisen.general</groupId>
       <artifactId>net-meisen-general-server</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>TRUNK-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>net.meisen.general</groupId>
       <artifactId>net-meisen-general-gen-misc</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>TRUNK-SNAPSHOT</version>
     </dependency>
     
     <!-- http-connector -->
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>net.meisen.general</groupId>
       <artifactId>net-meisen-general-server</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>TRUNK-SNAPSHOT</version>
       <classifier>test</classifier>
       <scope>test</scope>
     </dependency>
