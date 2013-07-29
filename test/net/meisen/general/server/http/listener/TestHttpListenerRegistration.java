@@ -3,6 +3,9 @@ package net.meisen.general.server.http.listener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Locale;
+
 import net.meisen.general.genmisc.types.Files;
 import net.meisen.general.server.http.listener.exceptions.HttpListenerException;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
@@ -38,6 +41,9 @@ public class TestHttpListenerRegistration {
 	 */
 	@Test
 	public void testInvalidDocDir() {
+		final Locale defLocale = Locale.getDefault();
+		Locale.setDefault(new Locale("en"));
+
 		System.setProperty("server.settings.selector",
 				"serverHttp-test-invalidDocDir.xml");
 
@@ -51,5 +57,7 @@ public class TestHttpListenerRegistration {
 					"The document-root has to be specified for any http-listener",
 					e.getMessage());
 		}
+
+		Locale.setDefault(defLocale);
 	}
 }
