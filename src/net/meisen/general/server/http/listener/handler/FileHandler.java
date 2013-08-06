@@ -11,8 +11,6 @@ import net.meisen.general.server.http.listener.api.IHandler;
 import net.meisen.general.server.http.listener.exceptions.FileHandlerException;
 import net.meisen.general.server.settings.pojos.Extension;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -22,7 +20,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -62,6 +61,9 @@ public class FileHandler implements IHandler {
 	public final static String DEF_DOCROOT = ".";
 
 	private String docRoot = null;
+
+	private final static Logger LOG = LoggerFactory
+			.getLogger(FileHandler.class);
 
 	@Autowired
 	@Qualifier("exceptionRegistry")
@@ -120,15 +122,6 @@ public class FileHandler implements IHandler {
 
 		// get the target of the request
 		final String target = request.getRequestLine().getUri();
-
-		if (request instanceof HttpEntityEnclosingRequest) {
-			HttpEntity entity = ((HttpEntityEnclosingRequest) request)
-					.getEntity();
-			byte[] entityContent = EntityUtils.toByteArray(entity);
-			System.out.println("Incoming entity content (bytes): "
-					+ entityContent.length);
-		}
-
 		final File file = new File(this.docRoot, URLDecoder.decode(target,
 				"UTF-8"));
 		if (!file.exists()) {
@@ -138,8 +131,10 @@ public class FileHandler implements IHandler {
 					+ file.getPath() + " not found</h1></body></html>",
 					ContentType.create("text/html", "UTF-8"));
 			response.setEntity(entity);
-			System.out.println("File " + file.getPath() + " not found");
 
+			if (LOG.isInfoEnabled()) {
+				LOG.info("File " + file.getPath() + " not found");
+			}
 		} else if (!file.canRead() || file.isDirectory()) {
 
 			response.setStatusCode(HttpStatus.SC_FORBIDDEN);
@@ -147,8 +142,10 @@ public class FileHandler implements IHandler {
 					"<html><body><h1>Access denied</h1></body></html>",
 					ContentType.create("text/html", "UTF-8"));
 			response.setEntity(entity);
-			System.out.println("Cannot read file " + file.getPath());
 
+			if (LOG.isWarnEnabled()) {
+				LOG.warn("Cannot read file " + file.getPath());
+			}
 		} else {
 			response.setStatusCode(HttpStatus.SC_OK);
 
@@ -158,8 +155,11 @@ public class FileHandler implements IHandler {
 			final FileEntity body = new FileEntity(file, contentType);
 
 			response.setEntity(body);
-			System.out.println("Serving file " + file.getPath() + " of type "
-					+ mimeType);
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Serving file " + file.getPath() + " of type "
+						+ mimeType);
+			}
 		}
 	}
 }
