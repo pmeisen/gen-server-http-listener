@@ -10,8 +10,9 @@ import org.junit.runners.Suite;
  * 
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ TestHttpListenerRegistration.class,
-		TestHttpListenerControl.class, TestHttpListenerFileHandler.class })
+@Suite.SuiteClasses({ TestDefaultHandlerManager.class,
+		TestHttpListenerRegistration.class, TestHttpListenerControl.class,
+		TestFileHandler.class })
 public class AllTests {
 	// nothing more to do here
 }

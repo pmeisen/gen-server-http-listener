@@ -6,8 +6,10 @@ import static org.junit.Assert.fail;
 
 import java.util.Locale;
 
-import net.meisen.general.genmisc.types.Files;
-import net.meisen.general.server.http.listener.exceptions.HttpListenerException;
+import net.meisen.general.server.http.listener.api.IHandler;
+import net.meisen.general.server.http.listener.exceptions.FileHandlerException;
+import net.meisen.general.server.http.listener.handler.FileHandler;
+import net.meisen.general.server.http.listener.handler.ServletHandler;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
 
 import org.junit.Test;
@@ -21,8 +23,8 @@ import org.junit.Test;
 public class TestHttpListenerRegistration {
 
 	/**
-	 * Tests the registration of the HTTP listener using the working directory as
-	 * docRoot
+	 * Tests the registration of the HTTP listener using the working directory
+	 * as docRoot
 	 */
 	@Test
 	public void testWorkingDocRoot() {
@@ -33,7 +35,12 @@ public class TestHttpListenerRegistration {
 		final HttpListener httpListener = TestHelper.getHttpListener();
 
 		// check the document root
-		assertEquals(Files.getCanonicalPath("."), httpListener.getDocRoot());
+		assertEquals(1, httpListener.getHandlers().size());
+
+		// get the handler
+		final IHandler handler = httpListener.getHandlers().values().iterator()
+				.next();
+		assertTrue(handler instanceof FileHandler);
 	}
 
 	/**
@@ -52,12 +59,34 @@ public class TestHttpListenerRegistration {
 			TestHelper.getHttpListener();
 			fail("Exception was not thrown");
 		} catch (final Exception e) {
-			assertTrue(e instanceof HttpListenerException);
+			assertTrue("Expected '" + FileHandlerException.class.getName()
+					+ "', but got '" + e.getClass().getName() + "'",
+					e instanceof FileHandlerException);
 			assertEquals(
-					"The document-root has to be specified for any http-listener",
+					"The document-root 'NEVEREXISTSANDNEVERWILLEXISTS?' cannot be accessed or it doesn't exist.",
 					e.getMessage());
 		}
 
 		Locale.setDefault(defLocale);
+	}
+
+	/**
+	 * Tests the definition of several <code>Handler</code> instances.
+	 */
+	@Test
+	public void testSeveralHandlers() {
+		System.setProperty("server.settings.selector",
+				"serverHttp-test-DocDirAndServlet.xml");
+
+		// get the test-subject
+		final HttpListener httpListener = TestHelper.getHttpListener();
+		assertEquals(2, httpListener.getHandlers().size());
+
+		final IHandler fileHandler = httpListener.getHandlers().get("*");
+		assertTrue(fileHandler instanceof FileHandler);
+
+		final IHandler servletHandler = httpListener.getHandlers().get(
+				"servlet/.*");
+		assertTrue(servletHandler instanceof ServletHandler);
 	}
 }

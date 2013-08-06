@@ -15,11 +15,20 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestHttpListenerFileHandler {
+/**
+ * Tests the implementation of the <code>FileHandler</code>.
+ * 
+ * @author pmeisen
+ * 
+ */
+public class TestFileHandler {
 
 	private static HttpListener httpListener = null;
 	private static File testDir = null;
 
+	/**
+	 * Create a temporary directory for the test
+	 */
 	@BeforeClass
 	public static void beforeClass() {
 
@@ -40,6 +49,15 @@ public class TestHttpListenerFileHandler {
 		httpListener.open();
 	}
 
+	/**
+	 * Tests the retrieval of a file via the handler.
+	 * 
+	 * @throws ClientProtocolException
+	 *             if the client cannot access the server with the specified
+	 *             protocol (should never happen)
+	 * @throws IOException
+	 *             if the file or data cannot be read
+	 */
 	@Test
 	public void testFileRetrieval() throws ClientProtocolException, IOException {
 		final String expFileContent = "This is a test-entry";
@@ -57,6 +75,9 @@ public class TestHttpListenerFileHandler {
 		assertEquals(expFileContent, fileContent);
 	}
 
+	/**
+	 * Cleans up behind the test.
+	 */
 	@AfterClass
 	public static void afterClass() {
 		// close the connection

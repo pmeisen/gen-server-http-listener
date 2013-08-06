@@ -1,15 +1,22 @@
 package net.meisen.general.server.http.listener;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import net.meisen.general.genmisc.types.Files;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
 
 import org.junit.Test;
 
+/**
+ * Tests the implementation of the <code>HttpListener</code>.
+ * 
+ * @author pmeisen
+ * 
+ */
 public class TestHttpListenerControl {
 
+	/**
+	 * Tests the closing of a <code>HttpListener</code>.
+	 */
 	@Test
 	public void testClosing() {
 		System.setProperty("server.settings.selector",
@@ -17,9 +24,6 @@ public class TestHttpListenerControl {
 
 		// get the test-subject
 		final HttpListener httpListener = TestHelper.getHttpListener();
-
-		// check the document root
-		assertEquals(Files.getCanonicalPath("."), httpListener.getDocRoot());
 
 		// start and shut the listener again
 		httpListener.open();
@@ -35,7 +39,13 @@ public class TestHttpListenerControl {
 		}
 		assertTrue(httpListener.isClosed());
 	}
-	
+
+	/**
+	 * Tests the closing after some time of sleeping.
+	 * 
+	 * @throws InterruptedException
+	 *             if the sleep is interrupted
+	 */
 	@Test
 	public void testClosingAfterSleep() throws InterruptedException {
 		System.setProperty("server.settings.selector",
@@ -44,13 +54,10 @@ public class TestHttpListenerControl {
 		// get the test-subject
 		final HttpListener httpListener = TestHelper.getHttpListener();
 
-		// check the document root
-		assertEquals(Files.getCanonicalPath("."), httpListener.getDocRoot());
-
 		// start and shut the listener again
 		httpListener.open();
 		assertFalse(httpListener.isClosed());
-		
+
 		// sleep a little and close it
 		Thread.sleep(1000);
 		httpListener.close();

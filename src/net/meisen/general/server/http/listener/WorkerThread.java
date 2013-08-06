@@ -11,17 +11,36 @@ import org.apache.http.protocol.HttpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * <code>Thread</code> used to handle requests.
+ * 
+ * @author pmeisen
+ * 
+ */
 public class WorkerThread extends Thread {
-	private final static Logger LOG = LoggerFactory.getLogger(WorkerThread.class);
+	private final static Logger LOG = LoggerFactory
+			.getLogger(WorkerThread.class);
 
-	private final HttpService httpservice;
+	private final HttpService httpService;
 	private final HttpServerConnection conn;
 
-	public WorkerThread(final HttpService httpservice,
+	/**
+	 * Default constructor which specifies the <code>HttpService</code> and the
+	 * <code>HttpServerConnection</code>.
+	 * 
+	 * @param httpService
+	 *            the <code>HttpService</code> to be used
+	 * @param conn
+	 *            the <code>HttpServerConnection</code> to use
+	 * 
+	 * @see HttpService
+	 * @see HttpServerConnection
+	 */
+	public WorkerThread(final HttpService httpService,
 			final HttpServerConnection conn) {
 		super();
 
-		this.httpservice = httpservice;
+		this.httpService = httpService;
 		this.conn = conn;
 	}
 
@@ -34,11 +53,11 @@ public class WorkerThread extends Thread {
 		final HttpContext context = new BasicHttpContext(null);
 		try {
 			while (!Thread.interrupted() && conn.isOpen()) {
-				httpservice.handleRequest(conn, context);
+				httpService.handleRequest(conn, context);
 			}
 		} catch (final ConnectionClosedException ex) {
 			if (LOG.isTraceEnabled()) {
-				LOG.trace("Client closed the connection.", ex);
+				LOG.trace("Client closed the connection.");
 			}
 		} catch (final IOException ex) {
 			if (LOG.isErrorEnabled()) {

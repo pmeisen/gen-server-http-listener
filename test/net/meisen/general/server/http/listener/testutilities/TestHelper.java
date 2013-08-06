@@ -40,7 +40,8 @@ public class TestHelper {
 
 		// load the configuration
 		final ConfigurationCoreSettings settings = ConfigurationCoreSettings
-				.loadCoreSettings("sbconfigurator-core-useSystemProperties.xml",
+				.loadCoreSettings(
+						"sbconfigurator-core-useSystemProperties.xml",
 						Server.class);
 		final IConfiguration config = settings.getConfiguration();
 
@@ -66,9 +67,21 @@ public class TestHelper {
 		return listener;
 	}
 
+	/**
+	 * Helper method to get the response from a specific <code>port</code>
+	 * requesting the specified <code>suffix</code>.
+	 * 
+	 * @param port
+	 *            the port to retrieve data from
+	 * @param suffix
+	 *            the suffix of the base-url to request
+	 * 
+	 * @return the answer
+	 */
 	public static byte[] getResponse(final int port, final String suffix) {
 		final HttpClient httpclient = new DefaultHttpClient();
-		final HttpGet httpget = new HttpGet("http://localhost:" + port + "/" + suffix);
+		final HttpGet httpget = new HttpGet("http://localhost:" + port + "/"
+				+ suffix);
 
 		HttpEntity entity = null;
 		InputStream instream = null;

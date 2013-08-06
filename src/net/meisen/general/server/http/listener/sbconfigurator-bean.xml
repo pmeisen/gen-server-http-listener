@@ -5,6 +5,21 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                            http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util-2.0.xsd">
   
+  <!-- add the DefaultHandlerManager -->
+  <bean id="httpListenerHandlerManager" class="net.meisen.general.server.http.listener.handler.DefaultHandlerManager" />
+  
+  <!-- add the available handler to the httpListenerHandlerManager -->
+  <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetObject"><ref bean="httpListenerHandlerManager" /></property>
+    <property name="targetMethod" value="addHandlers" />
+    <property name="arguments">
+      <map key-type="java.lang.String" value-type="java.lang.Class">
+        <entry key="docroot" value="net.meisen.general.server.http.listener.handler.FileHandler" />
+        <entry key="servlet" value="net.meisen.general.server.http.listener.handler.ServletHandler" />
+      </map>
+    </property>
+  </bean>
+  
   <!-- add the named listeners to the listenerFactory -->
   <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
     <property name="targetObject"><ref bean="listenerFactory" /></property>
@@ -25,8 +40,12 @@
     <property name="targetMethod" value="addExceptionCatalogsByClass" />
     <property name="arguments">
       <map key-type="java.lang.Class" value-type="java.lang.Class">
-        <entry key="net.meisen.general.server.http.listener.exceptions.HttpListenerException" 
-               value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />  
+        <entry key="net.meisen.general.server.http.listener.exceptions.FileHandlerException" 
+               value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />
+        <entry key="net.meisen.general.server.http.listener.exceptions.ServletHandlerException" 
+               value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />
+        <entry key="net.meisen.general.server.http.listener.exceptions.HandlerManagerException" 
+               value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />
       </map>
     </property>
   </bean>

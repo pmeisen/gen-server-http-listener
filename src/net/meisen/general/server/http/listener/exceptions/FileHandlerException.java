@@ -1,13 +1,13 @@
 package net.meisen.general.server.http.listener.exceptions;
 
 /**
- * A <code>HttpListenerException</code> is thrown whenever the listener failed
- * to initialize or to open the connection.
+ * A <code>FileHandlerException</code> is thrown if the configuration is invalid
+ * or a file-access fails.
  * 
  * @author pmeisen
  * 
  */
-public class HttpListenerException extends RuntimeException {
+public class FileHandlerException extends RuntimeException {
 	private static final long serialVersionUID = 9041793151940914571L;
 
 	/**
@@ -15,9 +15,9 @@ public class HttpListenerException extends RuntimeException {
 	 * reason for the exception, i.e. the exception is the root.
 	 * 
 	 * @param message
-	 *          the message of the exception
+	 *            the message of the exception
 	 */
-	public HttpListenerException(final String message) {
+	public FileHandlerException(final String message) {
 		super(message);
 	}
 
@@ -26,11 +26,11 @@ public class HttpListenerException extends RuntimeException {
 	 * <code>Throwable</code> is the reason for this.
 	 * 
 	 * @param message
-	 *          the message of the exception
+	 *            the message of the exception
 	 * @param t
-	 *          the reason for the exception
+	 *            the reason for the exception
 	 */
-	public HttpListenerException(final String message, final Throwable t) {
+	public FileHandlerException(final String message, final Throwable t) {
 		super(message, t);
 	}
 }
