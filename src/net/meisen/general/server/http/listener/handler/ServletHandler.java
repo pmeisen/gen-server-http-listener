@@ -63,6 +63,11 @@ public class ServletHandler implements IHandler {
 			exceptionRegistry.throwException(ServletHandlerException.class,
 					1000);
 		} else if ((servletClazzName = e.<String> getProperty("")) != null) {
+			
+			// remove any whitespaces
+			servletClazzName = servletClazzName.trim();
+			
+			// get the class
 			final Class<?> definedServletClazz = Classes
 					.getClass(servletClazzName);
 			if (definedServletClazz == null) {
