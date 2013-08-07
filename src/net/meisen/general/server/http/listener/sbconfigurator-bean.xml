@@ -46,6 +46,8 @@
                value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />
         <entry key="net.meisen.general.server.http.listener.exceptions.HandlerManagerException" 
                value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />
+        <entry key="net.meisen.general.server.http.listener.exceptions.ScriptedServletException" 
+               value="net.meisen.general.genmisc.exceptions.catalog.DefaultLocalizedExceptionCatalog" />
       </map>
     </property>
   </bean>

@@ -55,15 +55,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * 
  */
 public class FileHandler implements IHandler {
+	private final static Logger LOG = LoggerFactory
+			.getLogger(FileHandler.class);
+	
 	/**
 	 * The default document-root used when no other is defined.
 	 */
 	public final static String DEF_DOCROOT = ".";
 
 	private String docRoot = null;
-
-	private final static Logger LOG = LoggerFactory
-			.getLogger(FileHandler.class);
 
 	@Autowired
 	@Qualifier("exceptionRegistry")

@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 
 import net.meisen.general.genmisc.types.Streams;
@@ -65,6 +66,25 @@ public class TestHelper {
 		// return it
 		assertNotNull(listener);
 		return listener;
+	}
+
+	/**
+	 * Helper method to get the response from a specific <code>port</code>
+	 * requesting the specified <code>suffix</code>.
+	 * 
+	 * @param port
+	 *            the port to retrieve data from
+	 * @param suffix
+	 *            the suffix of the base-url to request
+	 * 
+	 * @return the answer as string
+	 */
+	public static String getStringResponse(final int port, final String suffix) {
+		try {
+			return new String(getResponse(port, suffix), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException();
+		}
 	}
 
 	/**

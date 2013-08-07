@@ -1,6 +1,7 @@
 package net.meisen.general.server.http.listener.api;
 
 import net.meisen.general.server.http.listener.handler.ServletHandler;
+import net.meisen.general.server.settings.pojos.Extension;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -18,6 +19,16 @@ import org.apache.http.protocol.HttpContext;
 public interface IServlet {
 
 	/**
+	 * Initializes the <code>Servlet</code> passing the defined
+	 * <code>Extension</code>.
+	 * 
+	 * @param e
+	 *            the <code>Extension</code> which defines the usage of the
+	 *            <code>Servlet</code>
+	 */
+	public void initialize(final Extension e);
+
+	/**
 	 * Method which is called whenever the <code>Servlet</code> is called.
 	 * 
 	 * @param request
@@ -28,7 +39,7 @@ public interface IServlet {
 	 * @param context
 	 *            the <code>HttpContext</code> of the request
 	 */
-	void handle(final HttpRequest request, final HttpResponse response,
+	public void handle(final HttpRequest request, final HttpResponse response,
 			final HttpContext context);
 
 }

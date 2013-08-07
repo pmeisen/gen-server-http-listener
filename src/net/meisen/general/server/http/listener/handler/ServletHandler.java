@@ -67,6 +67,11 @@ public class ServletHandler implements IHandler {
 			} else {
 				final IServlet servlet = (IServlet) configuration
 						.createInstance(definedServletClazz);
+
+				// initialize the Servlet
+				servlet.initialize(e);
+
+				// keep it
 				this.servlet = servlet;
 			}
 		} else {

@@ -85,7 +85,7 @@ public class HttpListener extends BaseListener {
 	 * 
 	 * @return the defined handlers
 	 */
-	protected Map<String, IHandler> getHandlers() {
+	public Map<String, IHandler> getHandlers() {
 		return Collections.unmodifiableMap(handlers);
 	}
 

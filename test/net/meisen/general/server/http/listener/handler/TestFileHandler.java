@@ -1,4 +1,4 @@
-package net.meisen.general.server.http.listener;
+package net.meisen.general.server.http.listener.handler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import net.meisen.general.genmisc.types.Files;
+import net.meisen.general.server.http.listener.HttpListener;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
 
 import org.apache.http.client.ClientProtocolException;

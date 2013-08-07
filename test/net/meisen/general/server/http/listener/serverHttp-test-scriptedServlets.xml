@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<server xmlns="http://dev.meisen.net/server/config" 
+		xmlns:e="http://dev.meisen.net/server/config/extension"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://dev.meisen.net/server/config http://dev.meisen.net/xsd/server/serverConfig.xsd
+                            http://dev.meisen.net/server/config/extension http://dev.meisen.net/xsd/server/serverConfigExtension.xsd">
+
+  <connector port="10000" listener="HTTP">
+  	<e:extension>
+      <servlet scriptfile="${java.io.tmpdir}\test_10000.js">net.meisen.general.server.http.listener.servlets.ScriptedServlet</servlet>
+    </e:extension>
+  </connector>
+  <connector port="10001" listener="HTTP">
+  	<e:extension>
+      <servlet>
+      	<script>
+			response.setStatusCode(org.apache.http.HttpStatus.SC_OK);
+			var entity = new  org.apache.http.entity.StringEntity('WHAT');
+			response.setEntity(entity);
+      	</script>
+      	net.meisen.general.server.http.listener.servlets.ScriptedServlet
+      </servlet>
+    </e:extension>
+  </connector>
+</server>

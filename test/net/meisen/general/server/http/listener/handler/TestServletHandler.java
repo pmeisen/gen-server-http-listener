@@ -1,4 +1,4 @@
-package net.meisen.general.server.http.listener;
+package net.meisen.general.server.http.listener.handler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -6,11 +6,14 @@ import static org.junit.Assert.assertTrue;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 
+import net.meisen.general.server.http.listener.AllTests;
+import net.meisen.general.server.http.listener.HttpListener;
 import net.meisen.general.server.http.listener.api.IHandler;
 import net.meisen.general.server.http.listener.api.IServlet;
 import net.meisen.general.server.http.listener.exceptions.ServletHandlerException;
 import net.meisen.general.server.http.listener.handler.ServletHandler;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
+import net.meisen.general.server.settings.pojos.Extension;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -35,6 +38,11 @@ public class TestServletHandler {
 	 * 
 	 */
 	public static class TestServlet implements IServlet {
+
+		@Override
+		public void initialize(final Extension e) {
+			// nothing to do
+		}
 
 		@Override
 		public void handle(final HttpRequest request,
