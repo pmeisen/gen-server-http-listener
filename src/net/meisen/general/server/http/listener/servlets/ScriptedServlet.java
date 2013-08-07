@@ -42,7 +42,7 @@ public class ScriptedServlet implements IServlet {
 	/**
 	 * The extension used to define a script
 	 */
-	public final static String EXTENSION_SCRIPT = "scriptfile";
+	public final static String EXTENSION_SCRIPT = "script";
 
 	@Autowired(required = false)
 	private ScriptEngine engine = null;
@@ -109,17 +109,17 @@ public class ScriptedServlet implements IServlet {
 
 		// remove all bindings for the engine
 		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-
+		
 		// add the bindings
 		engine.put("request", request);
 		engine.put("response", response);
 		engine.put("context", context);
-		System.out.println("----> " + this.script);
+
 		try {
 			engine.eval(this.script);
 		} catch (final ScriptException ex) {
 			exceptionRegistry.throwException(ScriptedServletException.class,
-					1003, ex, ex.getLineNumber());
+					1003, ex, ex.getLineNumber(), ex.getMessage());
 		}
 	}
 }

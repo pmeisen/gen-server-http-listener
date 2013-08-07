@@ -13,7 +13,12 @@ import net.meisen.general.server.settings.pojos.Extension;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -36,6 +41,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * 
  */
 public class ServletHandler implements IHandler {
+	private final static Logger LOG = LoggerFactory
+			.getLogger(ServletHandler.class);
 
 	@Autowired
 	@Qualifier("exceptionRegistry")
@@ -91,6 +98,23 @@ public class ServletHandler implements IHandler {
 		}
 
 		// handle the request
-		servlet.handle(request, response, context);
+		try {
+			servlet.handle(request, response, context);
+		}
+		// make sure that nothing can stop the servlet
+		catch (final Throwable t) {
+			if (LOG.isErrorEnabled()) {
+				LOG.error("Failed to execute servlet '"
+						+ servlet.getClass().getName() + "'", t);
+			}
+
+			// answer the client
+			response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+			StringEntity entity = new StringEntity(
+					"<html><body><h1>Servlet Exception</h1><div>"
+							+ t.getLocalizedMessage() + "</div></body></html>",
+					ContentType.create("text/html", "UTF-8"));
+			response.setEntity(entity);
+		}
 	}
 }

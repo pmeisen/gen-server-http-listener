@@ -16,7 +16,7 @@
       <servlet>
       	<script>
 			response.setStatusCode(org.apache.http.HttpStatus.SC_OK);
-			var entity = new  org.apache.http.entity.StringEntity('WHAT');
+			var entity = new org.apache.http.entity.StringEntity('THE TEST WAS SUCCESSFUL ON PORT 10001');
 			response.setEntity(entity);
       	</script>
       	net.meisen.general.server.http.listener.servlets.ScriptedServlet
