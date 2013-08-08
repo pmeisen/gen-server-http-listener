@@ -3,10 +3,14 @@ package net.meisen.general.server.http.listener.handler;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import net.meisen.general.genmisc.exceptions.registry.IExceptionRegistry;
 import net.meisen.general.genmisc.types.Files;
+import net.meisen.general.server.http.listener.HttpListener;
 import net.meisen.general.server.http.listener.api.IHandler;
 import net.meisen.general.server.http.listener.exceptions.FileHandlerException;
 import net.meisen.general.server.settings.pojos.Extension;
@@ -57,13 +61,33 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class FileHandler implements IHandler {
 	private final static Logger LOG = LoggerFactory
 			.getLogger(FileHandler.class);
-	
+
+	/**
+	 * The property used to define the document root of a
+	 * <code>FileHandler</code>.
+	 */
+	public static final String PROPERTY_DOCROOT = "";
+	/**
+	 * The property to define a comma separated list of default list, e.g.
+	 * index.htm, index.html
+	 */
+	public final static String PROPERTY_DEFFILES = "deffiles";
 	/**
 	 * The default document-root used when no other is defined.
 	 */
 	public final static String DEF_DOCROOT = ".";
+	/**
+	 * The default list of default files
+	 */
+	public final static String DEF_DEFFILES = "index.htm, index.html";
+	/**
+	 * The regular expression used to validate the default-filenames
+	 */
+	public final static String DEFFILE_MATCHER = "(?:[a-zA-Z0-9]+[_\\-]?)+\\.[a-zA-Z0-9]+";
 
 	private String docRoot = null;
+	private String prefix = null;
+	private List<String> defFiles = null;
 
 	@Autowired
 	@Qualifier("exceptionRegistry")
@@ -73,14 +97,140 @@ public class FileHandler implements IHandler {
 	public void initialize(final Extension e) {
 
 		// determine the document-root to be used
+		final String docRoot = determineDocumentRoot(e);
+
+		// validate the docRoot
+		validateDocRoot(new File(docRoot));
+
+		// use the document-root
+		this.docRoot = Files.getCanonicalPath(docRoot);
+
+		/*
+		 * get the urlMatcher we need that to strip the URI correctly, i.e. if
+		 * someone defines the folder 'C:\myTestFolder' to be matched with
+		 * '/test/*' the retrieval of http://localhost/test/my/world should try
+		 * to retrieve data from 'C:\myTestFolder\my\world' and not
+		 * 'C:\myTestFolder\test\my\world'.
+		 */
+		this.prefix = determinePrefix(e);
+
+		// determine the list of default files
+		final List<String> defFiles = determineDefaultFiles(e);
+
+		// validate the default files
+		validateDefFiles(defFiles);
+
+		// use the defaultFiles
+		this.defFiles = defFiles;
+	}
+
+	/**
+	 * Validates the passed <code>defFiles</code> and throws a
+	 * <code>FileHandlerException</code> if at least one cannot be validated.
+	 * 
+	 * @param defFiles
+	 *            the files to be validated
+	 * 
+	 * @throws FileHandlerException
+	 *             if at least one of the <code>defFiles</code> cannot be
+	 *             validated
+	 */
+	protected void validateDefFiles(final List<String> defFiles)
+			throws FileHandlerException {
+		if (defFiles == null) {
+			return;
+		} else if (defFiles.size() > 0) {
+			for (final String defFile : defFiles) {
+				// check the file-syntax
+				if (!defFile.matches(DEFFILE_MATCHER)) {
+					exceptionRegistry.throwException(
+							FileHandlerException.class, 1003, defFile,
+							DEFFILE_MATCHER);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Determines the default files defined by the <code>Extension</code>.
+	 * 
+	 * @param e
+	 *            the <code>Extension</code> to determine the default files from
+	 * 
+	 * @return the determined default files
+	 */
+	protected List<String> determineDefaultFiles(final Extension e) {
+		String defFilesList;
+
+		if (e == null) {
+			defFilesList = DEF_DEFFILES;
+		} else if ((defFilesList = e.<String> getProperty(PROPERTY_DEFFILES)) != null) {
+			// nothing to do
+		} else {
+			defFilesList = DEF_DEFFILES;
+		}
+
+		// get the list
+		final List<String> list;
+		if (defFilesList == null || "".equals(defFilesList.trim())) {
+			list = new ArrayList<String>();
+		} else {
+			list = Arrays.asList(defFilesList.split("\\s*,\\s*"));
+		}
+
+		return list;
+	}
+
+	/**
+	 * Determines the prefix, which should be removed from the URI, prior to
+	 * looking up the file to be requested from the file-system.
+	 * 
+	 * @param e
+	 *            the <code>Extension</code> to read the prefix from
+	 * 
+	 * @return the determined prefix
+	 */
+	protected String determinePrefix(final Extension e) {
+		String prefix;
+		if (e == null) {
+			prefix = "";
+		} else if ((prefix = e
+				.<String> getProperty(HttpListener.PROPERTY_URLMATCHER)) != null) {
+
+			final int pos = prefix.lastIndexOf("/");
+			if (pos == -1) {
+				prefix = "";
+			} else {
+				prefix = prefix.substring(0, pos + 1);
+			}
+		} else {
+			prefix = "";
+		}
+
+		return prefix;
+	}
+
+	/**
+	 * Determines the document-root based on the specified
+	 * <code>Extension</code>. The returned document-root shouldn't be validated
+	 * within here, this is done in a separate method (
+	 * {@link #validateDocRoot(File)}).
+	 * 
+	 * @param e
+	 *            the <code>Extension</code> to determine the document-root from
+	 * 
+	 * @return the not validated document-root
+	 * 
+	 * @see #validateDocRoot(File)
+	 */
+	private String determineDocumentRoot(final Extension e) {
 		String docRoot;
 
-		// if no extension is defined we use the default
 		if (e == null) {
 			docRoot = DEF_DOCROOT;
 		}
 		// if the extension has no text-property defined
-		else if ((docRoot = e.<String> getProperty("")) != null) {
+		else if ((docRoot = e.<String> getProperty(PROPERTY_DOCROOT)) != null) {
 			docRoot = docRoot.trim();
 			docRoot = "".equals(docRoot) ? DEF_DOCROOT : docRoot;
 		}
@@ -89,17 +239,76 @@ public class FileHandler implements IHandler {
 			docRoot = DEF_DOCROOT;
 		}
 
-		// validate the docRoot
-		final File docRootFile = new File(docRoot);
-		if (!docRootFile.exists() || !docRootFile.canRead()) {
+		return docRoot;
+	}
+
+	/**
+	 * Validates the passed file, to be used as document-root. The method should
+	 * throw a <code>FileHandlerException</code> if the validation is fails.
+	 * 
+	 * @param file
+	 *            the file to be used as document-root
+	 * 
+	 * @throws FileHandlerException
+	 *             if the validation fails
+	 */
+	protected void validateDocRoot(final File file) throws FileHandlerException {
+		if (file == null) {
+			exceptionRegistry.throwException(FileHandlerException.class, 1001);
+		} else if (!file.exists() || !file.canRead()) {
 			exceptionRegistry.throwException(FileHandlerException.class, 1000,
-					docRoot);
-		} else if (!docRootFile.isDirectory()) {
+					file.getName());
+		} else if (!file.isDirectory()) {
 			exceptionRegistry.throwException(FileHandlerException.class, 1002,
-					docRoot);
+					file.getName());
+		}
+	}
+
+	/**
+	 * Determines the file to be used for the specified <code>uri</code>.
+	 * 
+	 * @param uri
+	 *            the uri to determine the <code>File</code> for
+	 * 
+	 * @return the <code>File</code> the passed <code>uri</code> points to
+	 * 
+	 * @throws IOException
+	 *             if the <code>uri</code> cannot be decoded
+	 */
+	protected File determineFile(final String uri) throws IOException {
+
+		// there is no empty file
+		if (uri == null || "".equals(uri.trim())) {
+			return null;
 		}
 
-		this.docRoot = Files.getCanonicalPath(docRoot);
+		// first decode it
+		String decUri = URLDecoder.decode(uri, "UTF-8");
+		if (decUri.startsWith(prefix)) {
+			decUri = decUri.substring(prefix.length());
+
+			// get the file
+			File file = new File(this.docRoot, decUri);
+			if (defFiles != null && file.exists() && file.canRead()
+					&& file.isDirectory()) {
+				for (final String defFile : defFiles) {
+					final File defFilePath = new File(file, defFile);
+
+					// check if the defFilePath is a valid file
+					if (defFilePath.exists() && defFilePath.canRead()
+							&& defFilePath.isFile()) {
+						file = defFilePath;
+						break;
+					}
+				}
+			}
+
+			return file;
+		} else {
+
+			// invalid, that should never happen
+			return null;
+		}
 	}
 
 	@Override
@@ -122,12 +331,11 @@ public class FileHandler implements IHandler {
 
 		// get the target of the request
 		final String target = request.getRequestLine().getUri();
-		final File file = new File(this.docRoot, URLDecoder.decode(target,
-				"UTF-8"));
-		if (!file.exists()) {
+		final File file = determineFile(target);
+		if (file == null || !file.exists()) {
 
 			response.setStatusCode(HttpStatus.SC_NOT_FOUND);
-			StringEntity entity = new StringEntity("<html><body><h1>File"
+			final StringEntity entity = new StringEntity("<html><body><h1>File"
 					+ file.getPath() + " not found</h1></body></html>",
 					ContentType.create("text/html", "UTF-8"));
 			response.setEntity(entity);
@@ -138,7 +346,7 @@ public class FileHandler implements IHandler {
 		} else if (!file.canRead() || file.isDirectory()) {
 
 			response.setStatusCode(HttpStatus.SC_FORBIDDEN);
-			StringEntity entity = new StringEntity(
+			final StringEntity entity = new StringEntity(
 					"<html><body><h1>Access denied</h1></body></html>",
 					ContentType.create("text/html", "UTF-8"));
 			response.setEntity(entity);

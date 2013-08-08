@@ -35,6 +35,10 @@ public class HttpListener extends BaseListener {
 	 * The urlMatcher used if none is defined
 	 */
 	public static final String DEF_URLMATCHER = "*";
+	/**
+	 * Property which defines the url-matcher
+	 */
+	public static final String PROPERTY_URLMATCHER = "urlmatcher";
 
 	@Autowired
 	@Qualifier("httpListenerHandlerManager")
@@ -101,7 +105,7 @@ public class HttpListener extends BaseListener {
 	 * @return the determined <code>urlMatcher</code>
 	 */
 	protected String getUrlMatcher(final Extension e) {
-		final String urlMatcher = e.getProperty("urlmatcher");
+		final String urlMatcher = e.getProperty(PROPERTY_URLMATCHER);
 
 		if (urlMatcher == null) {
 			return DEF_URLMATCHER;

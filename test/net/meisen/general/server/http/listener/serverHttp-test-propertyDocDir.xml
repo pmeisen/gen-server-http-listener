@@ -8,7 +8,7 @@
 
   <connector port="${server.settings.defaultPort}" listener="HTTP">
   	<e:extension>
-      <docroot>${server.settings.http.docroot}</docroot>
+      <docroot deffiles="myDefault.html">${server.settings.http.docroot}</docroot>
     </e:extension>
   </connector>
 </server>
