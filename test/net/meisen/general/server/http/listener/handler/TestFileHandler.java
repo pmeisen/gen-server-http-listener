@@ -362,6 +362,38 @@ public class TestFileHandler {
 	}
 
 	/**
+	 * Tests the match to a file instead of a directory
+	 * 
+	 * @throws IOException
+	 *             if the test-file cannot be created or decoding fails
+	 */
+	@Test
+	public void testFileDeterminationForFile() throws IOException {
+		final Extension e = new Extension();
+		e.setProperty(HttpListener.PROPERTY_URLMATCHER, "/file/match*");
+		final File rndFile = new File(testDir, UUID.randomUUID().toString());
+		rndFile.createNewFile();
+		e.setProperty(FileHandler.PROPERTY_DOCROOT, rndFile.getAbsolutePath());
+
+		final FileHandler h = new FileHandler() {
+			@Override
+			protected void validateDocRoot(File file)
+					throws FileHandlerException {
+				// disable the validation
+				return;
+			}
+		};
+		h.initialize(e);
+
+		// the test-subject
+		File file;
+
+		// check without sub-folder
+		file = h.determineFile("/file/matchwhatsoever");
+		assertEquals(rndFile, file);
+	}
+
+	/**
 	 * Tests the determination of default files with a <code>null</code>
 	 * <code>Extension</code>.
 	 */

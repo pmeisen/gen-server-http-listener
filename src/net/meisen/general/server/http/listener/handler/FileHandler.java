@@ -144,7 +144,7 @@ public class FileHandler implements IHandler {
 				// check the file-syntax
 				if (!defFile.matches(DEFFILE_MATCHER)) {
 					exceptionRegistry.throwException(
-							FileHandlerException.class, 1003, defFile,
+							FileHandlerException.class, 1002, defFile,
 							DEFFILE_MATCHER);
 				}
 			}
@@ -258,9 +258,6 @@ public class FileHandler implements IHandler {
 		} else if (!file.exists() || !file.canRead()) {
 			exceptionRegistry.throwException(FileHandlerException.class, 1000,
 					file.getName());
-		} else if (!file.isDirectory()) {
-			exceptionRegistry.throwException(FileHandlerException.class, 1002,
-					file.getName());
 		}
 	}
 
@@ -285,30 +282,40 @@ public class FileHandler implements IHandler {
 		// first decode it
 		String decUri = URLDecoder.decode(uri, "UTF-8");
 		if (decUri.startsWith(prefix)) {
-			decUri = decUri.substring(prefix.length());
+			File file;
 
 			// get the file
-			File file = new File(this.docRoot, decUri);
-			if (defFiles != null && file.exists() && file.canRead()
-					&& file.isDirectory()) {
-				for (final String defFile : defFiles) {
-					final File defFilePath = new File(file, defFile);
+			final File docRootFile = new File(this.docRoot);
+			if (docRootFile.isFile()) {
+				file = docRootFile;
+			} else {
+				decUri = decUri.substring(prefix.length());
+				file = new File(docRootFile, decUri);
 
-					// check if the defFilePath is a valid file
-					if (defFilePath.exists() && defFilePath.canRead()
-							&& defFilePath.isFile()) {
-						file = defFilePath;
-						break;
+				/*
+				 * if we have a valid directory (i.e. not a file), let's check
+				 * if there is default file available
+				 */
+				if (defFiles != null && file.exists() && file.canRead()
+						&& file.isDirectory()) {
+					for (final String defFile : defFiles) {
+						final File defFilePath = new File(file, defFile);
+
+						// check if the defFilePath is a valid file
+						if (defFilePath.exists() && defFilePath.canRead()
+								&& defFilePath.isFile()) {
+							file = defFilePath;
+							break;
+						}
 					}
 				}
 			}
 
 			return file;
 		} else {
-
-			// invalid, that should never happen
 			return null;
 		}
+
 	}
 
 	@Override
