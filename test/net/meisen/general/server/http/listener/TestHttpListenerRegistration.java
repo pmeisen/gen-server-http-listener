@@ -2,12 +2,7 @@ package net.meisen.general.server.http.listener;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Locale;
-
 import net.meisen.general.server.http.listener.api.IHandler;
-import net.meisen.general.server.http.listener.exceptions.FileHandlerException;
 import net.meisen.general.server.http.listener.handler.FileHandler;
 import net.meisen.general.server.http.listener.handler.ServletHandler;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
@@ -41,33 +36,6 @@ public class TestHttpListenerRegistration {
 		final IHandler handler = httpListener.getHandlers().values().iterator()
 				.next();
 		assertTrue(handler instanceof FileHandler);
-	}
-
-	/**
-	 * Tests the throwing of an exception, i.e. if the docRoot wasn't defined
-	 */
-	@Test
-	public void testInvalidDocDir() {
-		final Locale defLocale = Locale.getDefault();
-		Locale.setDefault(new Locale("en"));
-
-		System.setProperty("server.settings.selector",
-				"serverHttp-test-invalidDocDir.xml");
-
-		// get the test-subject and catch the expected exception
-		try {
-			TestHelper.getHttpListener();
-			fail("Exception was not thrown");
-		} catch (final Exception e) {
-			assertTrue("Expected '" + FileHandlerException.class.getName()
-					+ "', but got '" + e.getClass().getName() + "'",
-					e instanceof FileHandlerException);
-			assertEquals(
-					"The document-root 'NEVEREXISTSANDNEVERWILLEXISTS?' cannot be accessed or it doesn't exist.",
-					e.getMessage());
-		}
-
-		Locale.setDefault(defLocale);
 	}
 
 	/**

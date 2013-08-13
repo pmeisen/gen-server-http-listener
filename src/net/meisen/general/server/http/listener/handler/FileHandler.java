@@ -304,17 +304,8 @@ public class FileHandler implements IHandler {
 	protected void validateDocRoot(final List<String> docRoot)
 			throws FileHandlerException {
 
-		if (docRoot == null) {
+		if (docRoot == null || docRoot.size() == 0) {
 			exceptionRegistry.throwException(FileHandlerException.class, 1001);
-		}
-
-		for (final String location : docRoot) {
-			final File file = new File(location);
-
-			if (!file.exists() || !file.canRead()) {
-				exceptionRegistry.throwException(FileHandlerException.class,
-						1000, file.getName());
-			}
 		}
 	}
 
