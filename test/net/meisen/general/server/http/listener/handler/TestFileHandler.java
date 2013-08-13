@@ -8,6 +8,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -241,14 +242,12 @@ public class TestFileHandler {
 		e.setProperty(HttpListener.PROPERTY_URLMATCHER, "*");
 		e.setProperty(FileHandler.PROPERTY_DOCROOT, testDir.getAbsolutePath());
 
-		final FileHandler h = new FileHandler() {
-			@Override
-			protected void validateDocRoot(File file)
-					throws FileHandlerException {
-				// disable the validation
-				return;
-			}
-		};
+		// create the file
+		final File tmpDir = new File(testDir, "doc");
+		assertTrue(tmpDir.mkdirs());
+		assertTrue(new File(testDir, "doc/index.html").createNewFile());
+
+		final FileHandler h = new FileHandler();
 		h.initialize(e);
 
 		// get the file
@@ -256,6 +255,7 @@ public class TestFileHandler {
 
 		// check the retrieved file
 		assertEquals(new File(testDir, "doc\\index.html"), file);
+		assertTrue(Files.deleteDir(tmpDir));
 	}
 
 	/**
@@ -272,14 +272,14 @@ public class TestFileHandler {
 		e.setProperty(HttpListener.PROPERTY_URLMATCHER, "/doc/*");
 		e.setProperty(FileHandler.PROPERTY_DOCROOT, testDir.getAbsolutePath());
 
-		final FileHandler h = new FileHandler() {
-			@Override
-			protected void validateDocRoot(File file)
-					throws FileHandlerException {
-				// disable the validation
-				return;
-			}
-		};
+		// create the files
+		final File tmpDir = new File(testDir, "afolder");
+		final File tmpFile = new File(testDir, "index.html");
+		assertTrue(tmpDir.mkdirs());
+		assertTrue(tmpFile.createNewFile());
+		assertTrue(new File(testDir, "afolder/index.html").createNewFile());
+
+		final FileHandler h = new FileHandler();
 		h.initialize(e);
 
 		// the test subject
@@ -292,6 +292,8 @@ public class TestFileHandler {
 		// check with sub-folder
 		file = h.determineFile("/doc/afolder/index.html");
 		assertEquals(new File(testDir, "/afolder/index.html"), file);
+		assertTrue(tmpFile.delete());
+		assertTrue(Files.deleteDir(tmpDir));
 	}
 
 	/**
@@ -308,14 +310,14 @@ public class TestFileHandler {
 		e.setProperty(HttpListener.PROPERTY_URLMATCHER, "/doc/sub/file*");
 		e.setProperty(FileHandler.PROPERTY_DOCROOT, testDir.getAbsolutePath());
 
-		final FileHandler h = new FileHandler() {
-			@Override
-			protected void validateDocRoot(File file)
-					throws FileHandlerException {
-				// disable the validation
-				return;
-			}
-		};
+		// create the files
+		final File tmpDir = new File(testDir, "another");
+		final File tmpFile = new File(testDir, "fileSample.html");
+		assertTrue(tmpDir.mkdirs());
+		assertTrue(tmpFile.createNewFile());
+		assertTrue(new File(testDir, "another/fileSample.html").createNewFile());
+
+		final FileHandler h = new FileHandler();
 		h.initialize(e);
 
 		// the test-subject
@@ -328,6 +330,93 @@ public class TestFileHandler {
 		// check with sub-folder
 		file = h.determineFile("/doc/sub/another/fileSample.html");
 		assertEquals(new File(testDir, "another/fileSample.html"), file);
+
+		assertTrue(tmpFile.delete());
+		assertTrue(Files.deleteDir(tmpDir));
+	}
+
+	/**
+	 * Tests the usage of multiple locations
+	 * 
+	 * @throws IOException
+	 *             if a test-file cannot be created or if the decoding failed
+	 */
+	@Test
+	public void testFileWithMultipleLocations() throws IOException {
+		final Extension e = new Extension();
+		e.setProperty(HttpListener.PROPERTY_URLMATCHER, "/doc/*");
+		e.setProperty(FileHandler.PROPERTY_DOCROOT, testDir.getAbsolutePath());
+
+		// get a default name
+		final String defName = FileHandler.DEF_DEFFILES.split(",")[0].trim();
+
+		// place one file in the main-location
+		final File tmpFile = new File(testDir, "aMainFile.file");
+		assertTrue(tmpFile.createNewFile());
+
+		// create the files
+		final List<Extension> extensions = new ArrayList<Extension>();
+		final File tmpDir = new File(testDir, "doc");
+		assertTrue(tmpDir.mkdirs());
+		for (int i = 1; i < 10; i++) {
+			final File dir = new File(tmpDir, "" + i);
+			assertTrue(dir.mkdirs());
+
+			// create the same file in every folder
+			assertTrue(new File(dir, "normalized.file").createNewFile());
+
+			// create a specific file in every folder
+			assertTrue(new File(dir, "normalized_" + i + ".file")
+					.createNewFile());
+
+			// create a file in every 2 folder
+			if (i % 2 == 0) {
+				assertTrue(new File(dir, "normalized_even.file")
+						.createNewFile());
+			}
+
+			if (i % 9 == 0) {
+				assertTrue(new File(dir, defName).createNewFile());
+				assertTrue(new File(dir, "aMainFile.file").createNewFile());
+			}
+
+			// add as location
+			final Extension ex = new Extension();
+			ex.setId(FileHandler.EXTENSION_LOCATION);
+			ex.setProperty(FileHandler.PROPERTY_DOCROOT, dir.getAbsolutePath());
+			extensions.add(ex);
+		}
+		e.setExtensions(extensions);
+
+		final FileHandler h = new FileHandler();
+		h.initialize(e);
+
+		// the test-subject
+		File file;
+
+		// check simple retrieval
+		file = h.determineFile("/doc/normalized.file");
+		assertEquals(new File(tmpDir, "1/normalized.file"), file);
+
+		// check specific retrieval of a file which is only in one location
+		file = h.determineFile("/doc/normalized_3.file");
+		assertEquals(new File(tmpDir, "3/normalized_3.file"), file);
+
+		// check specific retrieval of a file which is available multiple times
+		file = h.determineFile("/doc/normalized_even.file");
+		assertEquals(new File(tmpDir, "2/normalized_even.file"), file);
+
+		// check a default name
+		file = h.determineFile("/doc/");
+		assertEquals(new File(tmpDir, "9/" + defName), file);
+
+		// check the main-folder
+		file = h.determineFile("/doc/aMainFile.file");
+		assertEquals(new File(testDir, "aMainFile.file"), file);
+
+		// cleanUp
+		assertTrue(tmpFile.delete());
+		assertTrue(Files.deleteDir(tmpDir));
 	}
 
 	/**
@@ -345,7 +434,7 @@ public class TestFileHandler {
 
 		final FileHandler h = new FileHandler() {
 			@Override
-			protected void validateDocRoot(File file)
+			protected void validateDocRoot(final List<String> docRoot)
 					throws FileHandlerException {
 				// disable the validation
 				return;
@@ -377,7 +466,7 @@ public class TestFileHandler {
 
 		final FileHandler h = new FileHandler() {
 			@Override
-			protected void validateDocRoot(File file)
+			protected void validateDocRoot(final List<String> docRoot)
 					throws FileHandlerException {
 				// disable the validation
 				return;

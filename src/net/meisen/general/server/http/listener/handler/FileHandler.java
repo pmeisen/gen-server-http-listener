@@ -52,6 +52,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * &lt;/connector&gt;
  * </pre>
  * 
+ * <pre>
+ * &lt;!-- define several folders to search in --&gt;
+ * &lt;connector port=&quot;666&quot; listener=&quot;HTTP&quot;&gt;
+ *   &lt;e:extension&gt;
+ *     &lt;docroot urlmatcher="def/.*"&gt;
+ *       &lt;location&gt;C:\web-root1\&lt;/location&gt;
+ *       &lt;location&gt;C:\web-root2\&lt;/location&gt;
+ *     &lt;/docroot&gt;
+ *     &lt;docroot&gt;C:\web-root\&lt;/docroot&gt;
+ *   &lt;/e:extension&gt;
+ * &lt;/connector&gt;
+ * </pre>
+ * 
  * @see #DEF_DOCROOT
  * 
  * @author pmeisen
@@ -62,6 +75,11 @@ public class FileHandler implements IHandler {
 	private final static Logger LOG = LoggerFactory
 			.getLogger(FileHandler.class);
 
+	/**
+	 * The extension which can be used to define several locations to look for a
+	 * file.
+	 */
+	public static final String EXTENSION_LOCATION = "location";
 	/**
 	 * The property used to define the document root of a
 	 * <code>FileHandler</code>.
@@ -85,9 +103,9 @@ public class FileHandler implements IHandler {
 	 */
 	public final static String DEFFILE_MATCHER = "(?:[a-zA-Z0-9]+[_\\-]?)+\\.[a-zA-Z0-9]+";
 
-	private String docRoot = null;
+	private List<String> docRoot = null;
 	private String prefix = null;
-	private List<String> defFiles = null;
+	private List<String> defFileNames = null;
 
 	@Autowired
 	@Qualifier("exceptionRegistry")
@@ -97,13 +115,17 @@ public class FileHandler implements IHandler {
 	public void initialize(final Extension e) {
 
 		// determine the document-root to be used
-		final String docRoot = determineDocumentRoot(e);
+		final List<String> docRoot = determineDocumentRoot(e);
 
 		// validate the docRoot
-		validateDocRoot(new File(docRoot));
+		validateDocRoot(docRoot);
 
 		// use the document-root
-		this.docRoot = Files.getCanonicalPath(docRoot);
+		this.docRoot = new ArrayList<String>();
+		for (final String location : docRoot) {
+			final String canonicalLocation = Files.getCanonicalPath(location);
+			this.docRoot.add(canonicalLocation);
+		}
 
 		/*
 		 * get the urlMatcher we need that to strip the URI correctly, i.e. if
@@ -121,7 +143,7 @@ public class FileHandler implements IHandler {
 		validateDefFiles(defFiles);
 
 		// use the defaultFiles
-		this.defFiles = defFiles;
+		this.defFileNames = defFiles;
 	}
 
 	/**
@@ -214,7 +236,10 @@ public class FileHandler implements IHandler {
 	 * Determines the document-root based on the specified
 	 * <code>Extension</code>. The returned document-root shouldn't be validated
 	 * within here, this is done in a separate method (
-	 * {@link #validateDocRoot(File)}).
+	 * {@link #validateDocRoot(File)}). A document-root can be defined by
+	 * several locations, which are searched in order of definition, whereby the
+	 * first-location will always be the value defined by the property (i.e.
+	 * within the docroot-element).
 	 * 
 	 * @param e
 	 *            the <code>Extension</code> to determine the document-root from
@@ -223,20 +248,44 @@ public class FileHandler implements IHandler {
 	 * 
 	 * @see #validateDocRoot(File)
 	 */
-	private String determineDocumentRoot(final Extension e) {
-		String docRoot;
+	private List<String> determineDocumentRoot(final Extension e) {
 
+		final List<String> docRoot = new ArrayList<String>();
+
+		// make sure that we have an extension for further processing
 		if (e == null) {
-			docRoot = DEF_DOCROOT;
+			docRoot.add(DEF_DOCROOT);
+			return docRoot;
 		}
-		// if the extension has no text-property defined
-		else if ((docRoot = e.<String> getProperty(PROPERTY_DOCROOT)) != null) {
-			docRoot = docRoot.trim();
-			docRoot = "".equals(docRoot) ? DEF_DOCROOT : docRoot;
+
+		// look up the default location (normally defined that way)
+		final String defLocation = e.<String> getProperty(PROPERTY_DOCROOT);
+		if (defLocation != null && !"".equals(defLocation.trim())) {
+			docRoot.add(defLocation);
 		}
-		// we don't have any text-attribute defined
-		else {
-			docRoot = DEF_DOCROOT;
+
+		// add all defined locations
+		if (e.hasExtension(EXTENSION_LOCATION)) {
+			final List<Extension> locExtensions = e
+					.getExtensions(EXTENSION_LOCATION);
+			for (final Extension locExtension : locExtensions) {
+				final String location = locExtension
+						.<String> getProperty(PROPERTY_DOCROOT);
+
+				// add the location if one is defined
+				if (location == null || "".equals(location.trim())) {
+					exceptionRegistry.throwException(
+							FileHandlerException.class, 1003,
+							EXTENSION_LOCATION);
+				} else {
+					docRoot.add(location);
+				}
+			}
+		}
+
+		// check if we found something
+		if (docRoot.size() == 0) {
+			docRoot.add(DEF_DOCROOT);
 		}
 
 		return docRoot;
@@ -246,18 +295,26 @@ public class FileHandler implements IHandler {
 	 * Validates the passed file, to be used as document-root. The method should
 	 * throw a <code>FileHandlerException</code> if the validation is fails.
 	 * 
-	 * @param file
-	 *            the file to be used as document-root
+	 * @param docRoot
+	 *            the document-root to be validated
 	 * 
 	 * @throws FileHandlerException
 	 *             if the validation fails
 	 */
-	protected void validateDocRoot(final File file) throws FileHandlerException {
-		if (file == null) {
+	protected void validateDocRoot(final List<String> docRoot)
+			throws FileHandlerException {
+
+		if (docRoot == null) {
 			exceptionRegistry.throwException(FileHandlerException.class, 1001);
-		} else if (!file.exists() || !file.canRead()) {
-			exceptionRegistry.throwException(FileHandlerException.class, 1000,
-					file.getName());
+		}
+
+		for (final String location : docRoot) {
+			final File file = new File(location);
+
+			if (!file.exists() || !file.canRead()) {
+				exceptionRegistry.throwException(FileHandlerException.class,
+						1000, file.getName());
+			}
 		}
 	}
 
@@ -282,36 +339,59 @@ public class FileHandler implements IHandler {
 		// first decode it
 		String decUri = URLDecoder.decode(uri, "UTF-8");
 		if (decUri.startsWith(prefix)) {
-			File file;
+			decUri = decUri.substring(prefix.length());
 
-			// get the file
-			final File docRootFile = new File(this.docRoot);
-			if (docRootFile.isFile()) {
-				file = docRootFile;
-			} else {
-				decUri = decUri.substring(prefix.length());
-				file = new File(docRootFile, decUri);
+			// we search for the file and for a default file
+			File file = null;
+			File defFile = null;
+
+			// search in each location if we have the file
+			for (final String location : docRoot) {
+				File locationFile = new File(location);
 
 				/*
-				 * if we have a valid directory (i.e. not a file), let's check
-				 * if there is default file available
+				 * check if a file is specified which we can use
 				 */
-				if (defFiles != null && file.exists() && file.canRead()
-						&& file.isDirectory()) {
-					for (final String defFile : defFiles) {
-						final File defFilePath = new File(file, defFile);
+				if (!locationFile.exists() || !locationFile.canRead()) {
+					continue;
+				}
+				/*
+				 * if we have a file directly we are done
+				 */
+				else if (locationFile.isFile()) {
+					file = locationFile;
+				}
+				/*
+				 * check if we can find the specified file (via URI) in the
+				 * directory
+				 */
+				else {
+					locationFile = new File(locationFile, decUri);
+					if (locationFile.isFile()) {
+						file = locationFile;
+						break;
+					}
+					/*
+					 * if we didn't find any default yet, we look it up in the
+					 * directory
+					 */
+					else if (defFile == null && defFileNames != null
+							&& locationFile.isDirectory()) {
+						for (final String defFiletName : defFileNames) {
+							final File defFilePath = new File(locationFile,
+									defFiletName);
 
-						// check if the defFilePath is a valid file
-						if (defFilePath.exists() && defFilePath.canRead()
-								&& defFilePath.isFile()) {
-							file = defFilePath;
-							break;
+							// check if the defFilePath is a valid file
+							if (defFilePath.exists() && defFilePath.canRead()
+									&& defFilePath.isFile()) {
+								defFile = defFilePath;
+							}
 						}
 					}
 				}
 			}
 
-			return file;
+			return file == null ? defFile : file;
 		} else {
 			return null;
 		}
@@ -340,15 +420,16 @@ public class FileHandler implements IHandler {
 		final String target = request.getRequestLine().getUri();
 		final File file = determineFile(target);
 		if (file == null || !file.exists()) {
+			final String failedFile = new File(target).getPath();
 
 			response.setStatusCode(HttpStatus.SC_NOT_FOUND);
 			final StringEntity entity = new StringEntity("<html><body><h1>File"
-					+ file.getPath() + " not found</h1></body></html>",
+					+ failedFile + " not found</h1></body></html>",
 					ContentType.create("text/html", "UTF-8"));
 			response.setEntity(entity);
 
 			if (LOG.isInfoEnabled()) {
-				LOG.info("File " + file.getPath() + " not found");
+				LOG.info("File " + failedFile + " not found");
 			}
 		} else if (!file.canRead() || file.isDirectory()) {
 
