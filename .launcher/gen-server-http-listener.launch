@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/gen-server-http-listener/_eclipse/lib/net-meisen-general-server-1.0.0-SNAPSHOT.jar"/>
+<listEntry value="/gen-server-http-listener/_eclipse/lib/net-meisen-general-server-TRUNK-SNAPSHOT.jar"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
