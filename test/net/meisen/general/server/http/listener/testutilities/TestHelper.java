@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 
@@ -135,5 +137,41 @@ public class TestHelper {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets the request and interprets it as a serialized object using
+	 * <code>ObjectInputStream</code> to deserialize.
+	 * 
+	 * @param port
+	 *            the port to retrieve data from
+	 * @param suffix
+	 *            the suffix of the base-url to request
+	 * 
+	 * @return the object retrieved or <code>null</code> if no object was
+	 *         retrieved
+	 */
+	public static Object getDeserializedResponse(final int port,
+			final String suffix) {
+
+		final byte[] response = getResponse(port, suffix);
+		final ByteArrayInputStream b = new ByteArrayInputStream(response);
+		final ObjectInputStream o;
+		try {
+			o = new ObjectInputStream(b);
+
+			// get the object
+			final Object object = o.readObject();
+
+			// cleanUp
+			Streams.closeIO(o);
+
+			// done
+			return object;
+		} catch (final Exception e) {
+			return null;
+		} finally {
+			Streams.closeIO(b);
+		}
 	}
 }

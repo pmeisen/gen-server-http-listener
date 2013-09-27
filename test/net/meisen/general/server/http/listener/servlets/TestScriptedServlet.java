@@ -216,7 +216,7 @@ public class TestScriptedServlet {
 
 		final String responseScript1 = TestHelper.getStringResponse(10000, "");
 		assertEquals("AWESOME IT worked on port 10000", responseScript1);
-
+		
 		final String responseScript2 = TestHelper.getStringResponse(10001, "");
 		assertEquals("THE TEST WAS SUCCESSFUL ON PORT 10001", responseScript2);
 
