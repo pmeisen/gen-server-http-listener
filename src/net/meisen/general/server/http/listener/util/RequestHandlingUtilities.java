@@ -44,7 +44,7 @@ public class RequestHandlingUtilities {
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("Unexpected exception thrown", e);
 		}
-
+		
 		// check the uri and it's raw query
 		final String rawQuery;
 		if (uri == null || (rawQuery = uri.getRawQuery()) == null) {
