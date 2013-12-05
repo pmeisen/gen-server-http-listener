@@ -40,6 +40,10 @@ public class ScriptedServlet implements IServlet {
 	 */
 	public final static String PROPERTY_SCRIPTFILE = "scriptfile";
 	/**
+	 * The property to specify if the file should be re-read all the time
+	 */
+	public final static String PROPERTY_REREADFILE = "reloadfile";
+	/**
 	 * The extension used to define a script
 	 */
 	public final static String EXTENSION_SCRIPT = "script";
@@ -51,6 +55,7 @@ public class ScriptedServlet implements IServlet {
 	@Qualifier("exceptionRegistry")
 	private IExceptionRegistry exceptionRegistry;
 
+	private boolean isFile;
 	private String script;
 
 	@Override
@@ -72,10 +77,18 @@ public class ScriptedServlet implements IServlet {
 		if (e.hasExtension(EXTENSION_SCRIPT)) {
 			final Extension scriptExtension = e.getExtension(EXTENSION_SCRIPT);
 			script = scriptExtension.getProperty("");
+
+			this.isFile = false;
 		} else {
 			final String scriptFileName = e.getProperty(PROPERTY_SCRIPTFILE);
+
+			final String rereadFile = e.getProperty(PROPERTY_REREADFILE);
+			this.isFile = "true".equals(rereadFile);
+
 			if (scriptFileName == null || "".equals(scriptFileName.trim())) {
 				script = "";
+			} else if (this.isFile) {
+				script = scriptFileName;
 			} else {
 				final File scriptFile = new File(scriptFileName);
 				if (!scriptFile.exists() || !scriptFile.isFile()
@@ -109,17 +122,40 @@ public class ScriptedServlet implements IServlet {
 
 		// remove all bindings for the engine
 		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-		
+
 		// add the bindings
 		engine.put("request", request);
 		engine.put("response", response);
 		engine.put("context", context);
 
-		try {
-			engine.eval(this.script);
-		} catch (final ScriptException ex) {
-			exceptionRegistry.throwException(ScriptedServletException.class,
-					1003, ex, ex.getLineNumber(), ex.getMessage());
+		// check if we have to read a file or if the script is already known
+		String script;
+		if (this.isFile) {
+			try {
+				script = Files.readFromFile(this.script);
+			} catch (final Exception ex) {
+				if (LOG.isErrorEnabled()) {
+					LOG.error(
+							"The file '"
+									+ this.script
+									+ "' could not be read dynamically, no script will be executed",
+							ex);
+				}
+				script = null;
+			}
+		} else {
+			script = this.script;
+		}
+
+		// if we have a script execute
+		if (script != null) {
+			try {
+				engine.eval(script);
+			} catch (final ScriptException ex) {
+				exceptionRegistry.throwException(
+						ScriptedServletException.class, 1003, ex,
+						ex.getLineNumber(), ex.getMessage());
+			}
 		}
 	}
 }

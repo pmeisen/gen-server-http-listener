@@ -57,7 +57,7 @@ public class TestScriptedServlet {
 		def = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
 	}
-
+	
 	/**
 	 * Tests the usage of no script.
 	 */
@@ -226,7 +226,7 @@ public class TestScriptedServlet {
 		// cleanUp behind the test
 		assertTrue(script1.delete());
 	}
-
+	
 	/**
 	 * Reset to use the default <code>Locale</code> again.
 	 */
