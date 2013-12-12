@@ -155,6 +155,19 @@ public class TestHelper {
 			final String suffix) {
 
 		final byte[] response = getResponse(port, suffix);
+		return getDeserialized(response);
+	}
+
+	/**
+	 * Deserializes the passed {@code response}.
+	 * 
+	 * @param response
+	 *            the object to be deserialized
+	 * 
+	 * @return the deserialized object
+	 */
+	public static Object getDeserialized(final byte[] response) {
+
 		final ByteArrayInputStream b = new ByteArrayInputStream(response);
 		final ObjectInputStream o;
 		try {

@@ -3,11 +3,16 @@ package net.meisen.general.server.http.listener.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.meisen.general.genmisc.types.Streams;
 import net.meisen.general.sbconfigurator.runners.JUnitConfigurationRunner;
 import net.meisen.general.sbconfigurator.runners.annotations.ContextClass;
 import net.meisen.general.sbconfigurator.runners.annotations.ContextFile;
@@ -121,12 +126,12 @@ public class TestRequestHandlingUtilities {
 	@Test
 	public void testSingleParameter() throws UnsupportedEncodingException {
 		final String url = "/test?alles="
-				+ URLEncoder.encode("es ist super mit =", "UTF8");
+				+ URLEncoder.encode("es ist super mit = äüö", "UTF8");
 
 		// get the map
 		final HashMap<String, String> map = fire(url);
 		assertEquals(1, map.size());
-		assertEquals("es ist super mit =", map.get("alles"));
+		assertEquals("es ist super mit = äüö", map.get("alles"));
 	}
 
 	/**
@@ -141,6 +146,46 @@ public class TestRequestHandlingUtilities {
 		assertEquals(2, map.size());
 		assertEquals("isOne", map.get("one"));
 		assertEquals("isTwo", map.get("two"));
+	}
+
+	/**
+	 * Tests the retrieval of post parameters.
+	 * 
+	 * @throws IOException
+	 *             if the connection could not be open, read or written
+	 */
+	@Test
+	public void testPostValues() throws IOException {
+
+		// get the connection setup
+		final URL url = new URL("http://localhost:6060/test?lala=lulu");
+		final HttpURLConnection connection = (HttpURLConnection) url
+				.openConnection();
+		connection.setDoOutput(true);
+
+		// define the parameters to be send via post
+		final String urlParameters = "param1=a&param2=b&param3="
+				+ URLEncoder.encode("es ist super mit = äüö", "UTF8");
+		;
+
+		// write the post stuff to the connection
+		final OutputStreamWriter writer = new OutputStreamWriter(
+				connection.getOutputStream());
+		writer.write(urlParameters);
+		writer.flush();
+
+		final Object o = TestHelper.getDeserialized(Streams
+				.copyStreamToByteArray(connection.getInputStream()));
+		assertTrue(o instanceof HashMap);
+
+		@SuppressWarnings("unchecked")
+		final HashMap<String, String> params = (HashMap<String, String>) o;
+		assertEquals(params.get("param1"), "a");
+		assertEquals(params.get("param2"), "b");
+		assertEquals(params.get("param3"), "es ist super mit = äüö");
+
+		// close connection
+		connection.disconnect();
 	}
 
 	/**
