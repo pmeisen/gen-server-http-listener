@@ -11,7 +11,6 @@ import net.meisen.general.server.http.listener.HttpListener;
 import net.meisen.general.server.http.listener.api.IHandler;
 import net.meisen.general.server.http.listener.api.IServlet;
 import net.meisen.general.server.http.listener.exceptions.ServletHandlerException;
-import net.meisen.general.server.http.listener.handler.ServletHandler;
 import net.meisen.general.server.http.listener.testutilities.TestHelper;
 import net.meisen.general.server.settings.pojos.Extension;
 
@@ -129,7 +128,7 @@ public class TestServletHandler {
 	public void testUsage() throws UnsupportedEncodingException {
 		System.setProperty("server.settings.selector",
 				"serverHttp-test-testServlet.xml");
-
+		
 		// get the test-subject
 		final HttpListener httpListener = TestHelper.getHttpListener();
 

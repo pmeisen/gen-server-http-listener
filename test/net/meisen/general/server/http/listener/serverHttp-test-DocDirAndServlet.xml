@@ -9,7 +9,7 @@
   <connector port="${server.settings.defaultPort}" listener="HTTP">
   	<e:extension>
       <docroot urlmatcher="*">.</docroot>
-      <servlet urlmatcher="servlet/.*">net.meisen.general.server.http.listener.handler.TestServletHandler$TestServlet</servlet>
+      <servlet urlmatcher="servlet/*">net.meisen.general.server.http.listener.handler.TestServletHandler$TestServlet</servlet>
     </e:extension>
   </connector>
 </server>

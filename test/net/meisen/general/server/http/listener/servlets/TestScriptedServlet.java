@@ -57,7 +57,7 @@ public class TestScriptedServlet {
 		def = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
 	}
-	
+
 	/**
 	 * Tests the usage of no script.
 	 */
@@ -172,7 +172,8 @@ public class TestScriptedServlet {
 		// make sure the server started
 		Thread.sleep(100);
 
-		final String responseScript1 = TestHelper.getStringResponse(10000, "");
+		final String responseScript1 = TestHelper.getStringResponse(10000,
+				"firstScript");
 		assertEquals(
 				"<html><body><h1>Servlet Exception</h1><div>Exception while script-execution in line 1 (sun.org.mozilla.javascript.internal.EcmaError: ReferenceError: \"StringEntity\" is not defined. (<Unknown source>#1) in <Unknown source> at line number 1).</div></body></html>",
 				responseScript1);
@@ -214,9 +215,10 @@ public class TestScriptedServlet {
 		// make sure the server started
 		Thread.sleep(100);
 
-		final String responseScript1 = TestHelper.getStringResponse(10000, "");
+		final String responseScript1 = TestHelper.getStringResponse(10000,
+				"firstScript");
 		assertEquals("AWESOME IT worked on port 10000", responseScript1);
-		
+
 		final String responseScript2 = TestHelper.getStringResponse(10001, "");
 		assertEquals("THE TEST WAS SUCCESSFUL ON PORT 10001", responseScript2);
 
@@ -226,12 +228,89 @@ public class TestScriptedServlet {
 		// cleanUp behind the test
 		assertTrue(script1.delete());
 	}
-	
+
+	/**
+	 * Tests the reloading of a script when using the {@code reloadfile}
+	 * attribute.
+	 * 
+	 * @throws InterruptedException
+	 *             if the test cannot sleep
+	 * @throws IOException
+	 *             if the file cannot be created
+	 */
+	@Test
+	public void testScriptModification() throws InterruptedException,
+			IOException {
+		String script;
+
+		// create the script-files we will need
+		final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+		final File script1 = new File(tmpDir, "test_10000.js");
+
+		// write a script
+		script = "response.setStatusCode(org.apache.http.HttpStatus.SC_OK);";
+		script += "var entity = new org.apache.http.entity.StringEntity('AWESOME IT worked on port 10000');";
+		script += "response.setEntity(entity);";
+		createScript(script1, script);
+
+		// now start the server
+		server.startAsync();
+
+		// make sure the server started
+		Thread.sleep(100);
+
+		final String responseScript1 = TestHelper.getStringResponse(10000,
+				"reloadScript");
+		assertEquals("AWESOME IT worked on port 10000", responseScript1);
+
+		// write a new script
+		script = "response.setStatusCode(org.apache.http.HttpStatus.SC_OK);";
+		script += "var entity = new org.apache.http.entity.StringEntity('AWESOME IT worked on port 10000 again');";
+		script += "response.setEntity(entity);";
+		createScript(script1, script);
+
+		final String responseScript2 = TestHelper.getStringResponse(10000,
+				"reloadScript");
+		assertEquals("AWESOME IT worked on port 10000 again", responseScript2);
+		final String responseScript3 = TestHelper.getStringResponse(10000,
+				"firstScript");
+		assertEquals("AWESOME IT worked on port 10000", responseScript3);
+
+		// shut the server down again
+		server.shutdown();
+
+		// cleanUp behind the test
+		assertTrue(script1.delete());
+	}
+
+	/**
+	 * Helper method to create a script file.
+	 * 
+	 * @param script
+	 *            {@code File} to be created
+	 * @param content
+	 *            the content of the {@code script}
+	 * @throws IOException
+	 *             if the {@code script} cannot be created
+	 */
+	protected void createScript(final File script, final String content)
+			throws IOException {
+		script.delete();
+
+		assertTrue(script.createNewFile());
+		Files.writeToFile(script, content, "UTF-8");
+
+		assertEquals(content, Files.readFromFile(script));
+	}
+
 	/**
 	 * Reset to use the default <code>Locale</code> again.
 	 */
 	@After
 	public void cleanUp() {
 		Locale.setDefault(def);
+		if (server != null) {
+			server.shutdown();
+		}
 	}
 }

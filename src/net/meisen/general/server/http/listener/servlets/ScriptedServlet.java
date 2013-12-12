@@ -82,8 +82,8 @@ public class ScriptedServlet implements IServlet {
 		} else {
 			final String scriptFileName = e.getProperty(PROPERTY_SCRIPTFILE);
 
-			final String rereadFile = e.getProperty(PROPERTY_REREADFILE);
-			this.isFile = "true".equals(rereadFile);
+			final Boolean rereadFile = e.getProperty(PROPERTY_REREADFILE);
+			this.isFile = rereadFile == null ? false : rereadFile;
 
 			if (scriptFileName == null || "".equals(scriptFileName.trim())) {
 				script = "";

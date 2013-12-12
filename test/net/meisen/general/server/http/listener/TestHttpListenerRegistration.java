@@ -54,7 +54,7 @@ public class TestHttpListenerRegistration {
 		assertTrue(fileHandler instanceof FileHandler);
 
 		final IHandler servletHandler = httpListener.getHandlers().get(
-				"servlet/.*");
+				"servlet/*");
 		assertTrue(servletHandler instanceof ServletHandler);
 	}
 }
