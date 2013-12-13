@@ -284,6 +284,50 @@ public class TestScriptedServlet {
 	}
 
 	/**
+	 * This method test the storage used within a script
+	 * 
+	 * @throws InterruptedException
+	 *             if the test cannot sleep
+	 * @throws IOException
+	 *             if the file cannot be created
+	 */
+	@Test
+	public void testStorage() throws IOException, InterruptedException {
+
+		String script;
+
+		// create the script-files we will need
+		final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+		final File script1 = new File(tmpDir, "test_10000.js");
+
+		// write a script
+		script = "response.setStatusCode(org.apache.http.HttpStatus.SC_OK);";
+		script += "var entity = new org.apache.http.entity.StringEntity(storage.size());";
+		script += "storage.put(java.util.UUID.randomUUID().toString(), 'Sample');";
+		script += "response.setEntity(entity);";
+		createScript(script1, script);
+
+		// now start the server
+		server.startAsync();
+
+		// send 100 requests
+		for (int i = 0; i < 100; i++) {
+			final String response = TestHelper.getStringResponse(10000,
+					"firstScript");
+			assertEquals("" + i, response);
+		}
+
+		// shut the server down again
+		server.shutdown();
+
+		// cleanUp behind the test
+		assertTrue(script1.delete());
+
+		// make sure the server started
+		Thread.sleep(100);
+	}
+
+	/**
 	 * Helper method to create a script file.
 	 * 
 	 * @param script

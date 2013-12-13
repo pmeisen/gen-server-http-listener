@@ -48,6 +48,11 @@ public class ScriptedServlet implements IServlet {
 	 */
 	public final static String EXTENSION_SCRIPT = "script";
 
+	/**
+	 * A storage which can be used by scripts to keep data
+	 */
+	public final static ScriptedServletStorage storage = new ScriptedServletStorage();
+
 	@Autowired(required = false)
 	private ScriptEngine engine = null;
 
@@ -127,6 +132,7 @@ public class ScriptedServlet implements IServlet {
 		engine.put("request", request);
 		engine.put("response", response);
 		engine.put("context", context);
+		engine.put("storage", storage);
 
 		// check if we have to read a file or if the script is already known
 		String script;
