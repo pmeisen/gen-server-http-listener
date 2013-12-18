@@ -118,7 +118,7 @@ public class RequestHandlingUtilities {
 		if (request == null) {
 			return new HashMap<String, String>();
 		}
-
+		
 		// get the URI
 		final URI uri;
 		try {
