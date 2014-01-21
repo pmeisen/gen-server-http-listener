@@ -36,7 +36,7 @@
    
   <!-- add the exception to the exceptionsRegistry -->
   <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-    <property name="targetObject"><ref bean="exceptionRegistry" /></property>
+    <property name="targetObject"><ref bean="coreExceptionRegistryId" /></property>
     <property name="targetMethod" value="addExceptionCatalogsByClass" />
     <property name="arguments">
       <map key-type="java.lang.Class" value-type="java.lang.Class">

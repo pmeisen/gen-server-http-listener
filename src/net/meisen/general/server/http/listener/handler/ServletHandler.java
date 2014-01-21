@@ -45,7 +45,7 @@ public class ServletHandler implements IHandler {
 			.getLogger(ServletHandler.class);
 
 	@Autowired
-	@Qualifier("exceptionRegistry")
+	@Qualifier(IConfiguration.coreExceptionRegistryId)
 	private IExceptionRegistry exceptionRegistry;
 
 	@Autowired

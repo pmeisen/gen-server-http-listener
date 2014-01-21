@@ -9,6 +9,7 @@ import javax.script.ScriptException;
 
 import net.meisen.general.genmisc.exceptions.registry.IExceptionRegistry;
 import net.meisen.general.genmisc.types.Files;
+import net.meisen.general.sbconfigurator.api.IConfiguration;
 import net.meisen.general.server.http.listener.api.IServlet;
 import net.meisen.general.server.http.listener.exceptions.ScriptedServletException;
 import net.meisen.general.server.settings.pojos.Extension;
@@ -57,7 +58,7 @@ public class ScriptedServlet implements IServlet {
 	private ScriptEngine engine = null;
 
 	@Autowired
-	@Qualifier("exceptionRegistry")
+	@Qualifier(IConfiguration.coreExceptionRegistryId)
 	private IExceptionRegistry exceptionRegistry;
 
 	private boolean isFile;

@@ -43,7 +43,7 @@ public class DefaultHandlerManager implements IHandlerManager {
 	private Map<String, Class<? extends IHandler>> content = new HashMap<String, Class<? extends IHandler>>();
 
 	@Autowired
-	@Qualifier("exceptionRegistry")
+	@Qualifier(IConfiguration.coreExceptionRegistryId)
 	private IExceptionRegistry exceptionRegistry;
 
 	@Autowired

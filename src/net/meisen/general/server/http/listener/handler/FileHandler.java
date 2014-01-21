@@ -10,6 +10,7 @@ import java.util.Locale;
 
 import net.meisen.general.genmisc.exceptions.registry.IExceptionRegistry;
 import net.meisen.general.genmisc.types.Files;
+import net.meisen.general.sbconfigurator.api.IConfiguration;
 import net.meisen.general.server.http.listener.HttpListener;
 import net.meisen.general.server.http.listener.api.IHandler;
 import net.meisen.general.server.http.listener.exceptions.FileHandlerException;
@@ -108,7 +109,7 @@ public class FileHandler implements IHandler {
 	private List<String> defFileNames = null;
 
 	@Autowired
-	@Qualifier("exceptionRegistry")
+	@Qualifier(IConfiguration.coreExceptionRegistryId)
 	private IExceptionRegistry exceptionRegistry;
 
 	@Override
