@@ -7,7 +7,7 @@
   
   <!-- add the exception to the exceptionsRegistry -->
   <bean class="net.meisen.general.sbconfigurator.factories.MethodExecutorBean">
-    <property name="targetObject"><ref bean="coreExceptionRegistryId" /></property>
+    <property name="targetObject"><ref bean="coreExceptionRegistry" /></property>
     <property name="targetMethod" value="addExceptionCatalogsByClass" />
     
     <property name="type" value="factory" />
