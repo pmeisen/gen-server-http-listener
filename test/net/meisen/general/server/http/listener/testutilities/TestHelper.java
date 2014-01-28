@@ -21,9 +21,9 @@ import net.meisen.general.server.settings.pojos.Connector;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 /**
@@ -101,14 +101,39 @@ public class TestHelper {
 	 * @return the answer
 	 */
 	public static byte[] getResponse(final int port, final String suffix) {
-		final HttpClient httpclient = new DefaultHttpClient();
-		final HttpGet httpget = new HttpGet("http://localhost:" + port + "/"
+		final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+		final CloseableHttpClient httpClient = httpClientBuilder.build();
+		final HttpGet httpGet = new HttpGet("http://localhost:" + port + "/"
 				+ suffix);
 
+		try {
+			final HttpResponse response = httpClient.execute(httpGet);
+			return getResponse(response);
+		} catch (final RuntimeException e) {
+			// In case of an unexpected exception you may want to abort
+			// the HTTP request in order to shut down the underlying
+			// connection immediately.
+			httpGet.abort();
+			fail(e.getMessage());
+		} catch (final Exception e) {
+			fail(e.getMessage());
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the response as byte-array.
+	 * 
+	 * @param response
+	 *            the response
+	 * 
+	 * @return the byte array of the response
+	 */
+	public static byte[] getResponse(final HttpResponse response) {
 		HttpEntity entity = null;
 		InputStream instream = null;
 		try {
-			final HttpResponse response = httpclient.execute(httpget);
 			entity = response.getEntity();
 
 			// the only right way out of here
@@ -116,13 +141,6 @@ public class TestHelper {
 				instream = entity.getContent();
 				return Streams.copyStreamToByteArray(instream);
 			}
-
-		} catch (final RuntimeException e) {
-			// In case of an unexpected exception you may want to abort
-			// the HTTP request in order to shut down the underlying
-			// connection immediately.
-			httpget.abort();
-			fail(e.getMessage());
 		} catch (final Exception e) {
 			fail(e.getMessage());
 		} finally {

@@ -8,7 +8,8 @@
 
   <connector port="${server.settings.defaultPort}" listener="HTTP">
   	<e:extension>
-      <servlet>net.meisen.general.server.http.listener.util.TestRequestHandlingUtilities$TestServlet</servlet>
+      <servlet>net.meisen.general.server.http.listener.util.TestRequestHandlingUtilities$TestServletSerializeRequestParameters</servlet>
+      <servlet urlmatcher="/fileUpload">net.meisen.general.server.http.listener.util.TestRequestHandlingUtilities$TestServletFileUpload</servlet>
     </e:extension>
   </connector>
 </server>
