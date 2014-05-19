@@ -33,8 +33,22 @@ import org.apache.http.util.EntityUtils;
  * 
  */
 public class RequestHandlingUtilities {
-	private static final String PARAMETER_SEPARATOR = "&";
-	private static final String NAME_VALUE_SEPARATOR = "=";
+	/**
+	 * Default separator for parameters
+	 */
+	protected static final String PARAMETER_SEPARATOR = "&";
+	/**
+	 * Default separator for key and value
+	 */
+	protected static final String NAME_VALUE_SEPARATOR = "=";
+	/**
+	 * Cookie separator for parameters
+	 */
+	protected static final String COOKIE_NAME_VALUE_SEPARATOR = "=";
+	/**
+	 * Cookie separator for key and value
+	 */
+	protected static final String COOKIE_PARAMETER_SEPARATOR = ";";
 
 	/**
 	 * The Class RequestWrapper.
@@ -108,6 +122,25 @@ public class RequestHandlingUtilities {
 		}
 
 		return parameters;
+	}
+
+	/**
+	 * Parses the cookies send via the request-header.
+	 * 
+	 * @param request
+	 *            the request to get the cookie values from
+	 * 
+	 * @return the read cookie values
+	 */
+	public static Map<String, String> parseCookies(final HttpRequest request) {
+		final Map<String, String> cookies = new HashMap<String, String>();
+
+		for (final Header header : request.getHeaders("Cookie")) {
+			cookies.putAll(scanRawForParameters(header.getValue(),
+					COOKIE_PARAMETER_SEPARATOR, COOKIE_NAME_VALUE_SEPARATOR));
+		}
+
+		return cookies;
 	}
 
 	/**
@@ -263,7 +296,9 @@ public class RequestHandlingUtilities {
 	}
 
 	/**
-	 * Scans the passed {@code raw} string for parameters.
+	 * Scans the passed {@code raw} string for parameters. Using
+	 * {@link #PARAMETER_SEPARATOR} and {@link #NAME_VALUE_SEPARATOR} ass
+	 * separators.
 	 * 
 	 * @param raw
 	 *            the string to be parsed
@@ -271,17 +306,36 @@ public class RequestHandlingUtilities {
 	 * @return the read parameters
 	 */
 	protected static Map<String, String> scanRawForParameters(final String raw) {
+		return scanRawForParameters(raw, PARAMETER_SEPARATOR,
+				NAME_VALUE_SEPARATOR);
+	}
+
+	/**
+	 * Scans the passed {@code raw} string for parameters.
+	 * 
+	 * @param raw
+	 *            the string to be parsed
+	 * @param paramSeparator
+	 *            the separator used to separate the different parameter from
+	 *            each other
+	 * @param nameValueSeparator
+	 *            the separator used to separate the key from the value
+	 * 
+	 * @return the read parameters
+	 */
+	protected static Map<String, String> scanRawForParameters(final String raw,
+			final String paramSeparator, final String nameValueSeparator) {
 		final Map<String, String> parameters = new HashMap<String, String>();
 
 		final Scanner scanner = new Scanner(raw);
-		scanner.useDelimiter(PARAMETER_SEPARATOR);
+		scanner.useDelimiter(paramSeparator);
 
 		// parse the parameter
 		while (scanner.hasNext()) {
 			final String token = scanner.next();
 
 			// get the position of the separator
-			final int position = token.indexOf(NAME_VALUE_SEPARATOR);
+			final int position = token.indexOf(nameValueSeparator);
 
 			// get the name and the value
 			final String name;

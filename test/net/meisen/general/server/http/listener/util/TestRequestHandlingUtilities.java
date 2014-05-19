@@ -39,14 +39,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.SerializableEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Before;
@@ -88,6 +91,37 @@ public class TestRequestHandlingUtilities {
 
 			final Map<String, String> parameters = RequestHandlingUtilities
 					.parseParameter(request);
+
+			try {
+				response.setEntity(new SerializableEntity(
+						(HashMap<String, String>) parameters, false));
+			} catch (final Exception e) {
+				response.setEntity(new StringEntity("ERROR",
+						ContentType.DEFAULT_TEXT));
+			}
+		}
+	}
+
+	/**
+	 * Servlet reading the cookie-values.
+	 * 
+	 * @author pmeisen
+	 * 
+	 */
+	public static class TestServletSerializeCookies implements IServlet {
+
+		@Override
+		public void initialize(final Extension e) {
+			// nothing to do
+		}
+
+		@Override
+		public void handle(final HttpRequest request,
+				final HttpResponse response, final HttpContext context) {
+			response.setStatusCode(HttpStatus.SC_OK);
+
+			final Map<String, String> parameters = RequestHandlingUtilities
+					.parseCookies(request);
 
 			try {
 				response.setEntity(new SerializableEntity(
@@ -330,6 +364,75 @@ public class TestRequestHandlingUtilities {
 
 		// cleanUp
 		TestServletFileUpload.cleanUp();
+	}
+
+	/**
+	 * Tests the retrieval of cookie values.
+	 */
+	@Test
+	public void testCookies() {
+
+		// create the client
+		final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+		final Builder requestConfigBuilder = RequestConfig.custom();
+		final BasicCookieStore cookieStore = new BasicCookieStore();
+		requestConfigBuilder.setExpectContinueEnabled(false);
+		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+		httpClientBuilder.setDefaultCookieStore(cookieStore);
+
+		// add a cookie
+		BasicClientCookie cookie;
+		cookie = new BasicClientCookie("myCookie1",
+				"myValue1 contains äüö \\ \" values");
+		cookie.setDomain("localhost");
+		cookieStore.addCookie(cookie);
+		cookie = new BasicClientCookie("myCookie2", "myValue2");
+		cookie.setDomain("localhost");
+		cookieStore.addCookie(cookie);
+		cookie = new BasicClientCookie("myCookie3", null);
+		cookie.setDomain("localhost");
+		cookieStore.addCookie(cookie);
+		cookie = new BasicClientCookie("myCookie4", "");
+		cookie.setDomain("localhost");
+		cookieStore.addCookie(cookie);
+
+		final CloseableHttpClient httpClient = httpClientBuilder.build();
+
+		// create the post and host
+		final HttpHost httpHost = new HttpHost("localhost", 6060);
+		final HttpGet httpGet = new HttpGet("/cookies");
+
+		// execute it
+		Object answer = null;
+		try {
+			final HttpResponse response = httpClient.execute(httpHost, httpGet);
+			answer = TestHelper.getDeserialized(TestHelper
+					.getResponse(response));
+			httpClient.close();
+		} catch (final RuntimeException e) {
+			// In case of an unexpected exception you may want to abort
+			// the HTTP request in order to shut down the underlying
+			// connection immediately.
+			httpGet.abort();
+			fail(e.getMessage());
+		} catch (final Exception e) {
+			fail(e.getMessage());
+		}
+
+		// check the retrieved answer
+		assertNotNull(answer);
+		assertTrue(answer instanceof Map);
+
+		@SuppressWarnings("unchecked")
+		final Map<String, String> cookies = (Map<String, String>) answer;
+		assertEquals(4, cookies.size());
+
+		assertEquals(cookies.get("myCookie1"),
+				"myValue1 contains äüö \\ \" values");
+		assertEquals(cookies.get("myCookie2"), "myValue2");
+		assertEquals(cookies.get("myCookie3"), "");
+		assertEquals(cookies.get("myCookie4"), "");
+
 	}
 
 	/**

@@ -10,6 +10,7 @@
   	<e:extension>
       <servlet>net.meisen.general.server.http.listener.util.TestRequestHandlingUtilities$TestServletSerializeRequestParameters</servlet>
       <servlet urlmatcher="/fileUpload">net.meisen.general.server.http.listener.util.TestRequestHandlingUtilities$TestServletFileUpload</servlet>
+      <servlet urlmatcher="/cookies">net.meisen.general.server.http.listener.util.TestRequestHandlingUtilities$TestServletSerializeCookies</servlet>
     </e:extension>
   </connector>
 </server>
