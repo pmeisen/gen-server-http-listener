@@ -330,6 +330,8 @@ public class FileHandler implements IHandler {
 
 		// first decode it
 		String decUri = URLDecoder.decode(uri, "UTF-8");
+		decUri = deparameterize(decUri);
+
 		if (decUri.startsWith(prefix)) {
 			decUri = decUri.substring(prefix.length());
 
@@ -388,6 +390,23 @@ public class FileHandler implements IHandler {
 			return null;
 		}
 
+	}
+
+	/**
+	 * Removes specified parameters from an {@code URI}.
+	 * 
+	 * @param uri
+	 *            the {@code URI} to remove the parameters from
+	 * 
+	 * @return the {@code URI} without any parameters
+	 */
+	public String deparameterize(final String uri) {
+		final int pos = uri.lastIndexOf('?');
+		if (pos == -1) {
+			return uri;
+		} else {
+			return uri.substring(0, pos);
+		}
 	}
 
 	@Override

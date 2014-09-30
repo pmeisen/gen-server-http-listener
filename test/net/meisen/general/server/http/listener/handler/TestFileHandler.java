@@ -571,6 +571,34 @@ public class TestFileHandler {
 	}
 
 	/**
+	 * Tests the retrieval of a file via the handler specifying parameters with
+	 * it.
+	 * 
+	 * @throws ClientProtocolException
+	 *             if the client cannot access the server with the specified
+	 *             protocol (should never happen)
+	 * @throws IOException
+	 *             if the file or data cannot be read
+	 */
+	@Test
+	public void testFileRetrievalWithParameters()
+			throws ClientProtocolException, IOException {
+		final String expFileContent = "This is a test-entry";
+
+		// create a test-file which we want to retrieve
+		final File file = new File(testDir, UUID.randomUUID().toString());
+		Files.writeToFile(file, expFileContent, "UTF-8");
+
+		// get the response
+		final byte[] response = TestHelper.getResponse(httpListener.getPort(),
+				file.getName() + "?language=test");
+		final String fileContent = new String(response, "UTF-8");
+
+		// check the result
+		assertEquals(expFileContent, fileContent);
+	}
+
+	/**
 	 * Check the retrieval of a default-file.
 	 * 
 	 * @throws ClientProtocolException
@@ -593,6 +621,35 @@ public class TestFileHandler {
 		// get the response
 		final byte[] response = TestHelper.getResponse(httpListener.getPort(),
 				defFile.getParentFile().getName());
+		final String fileContent = new String(response, "UTF-8");
+
+		// check the result
+		assertEquals(expFileContent, fileContent);
+	}
+
+	/**
+	 * Check the retrieval of a default-file, while specifying parameters.
+	 * 
+	 * @throws ClientProtocolException
+	 *             if the client cannot access the server with the specified
+	 *             protocol (should never happen)
+	 * @throws IOException
+	 *             if the file or data cannot be read
+	 */
+	@Test
+	public void testDefaultFileRetrievalWithParameters()
+			throws ClientProtocolException, IOException {
+		final String expFileContent = "This is a default file";
+
+		// create a test-file which we want to retrieve
+		final File dir = new File(testDir, UUID.randomUUID().toString());
+		assertTrue(dir.mkdirs());
+		final File defFile = new File(dir, "myDefault.html");
+		Files.writeToFile(defFile, expFileContent, "UTF-8");
+
+		// get the response
+		final byte[] response = TestHelper.getResponse(httpListener.getPort(),
+				defFile.getParentFile().getName() + "?language=test");
 		final String fileContent = new String(response, "UTF-8");
 
 		// check the result
