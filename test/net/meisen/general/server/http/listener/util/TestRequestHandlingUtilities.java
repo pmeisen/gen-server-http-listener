@@ -191,7 +191,7 @@ public class TestRequestHandlingUtilities {
 		assertEquals("isOne", map.get("one"));
 		assertEquals("isTwo", map.get("two"));
 	}
-
+	
 	/**
 	 * Tests the retrieval of post parameters.
 	 * 

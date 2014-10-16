@@ -152,6 +152,80 @@ public class RequestHandlingUtilities {
 			return new HashMap<String, String>();
 		}
 
+		// check the uri and it's raw query
+		final String rawQuery = getRawQuery(request);
+		if (rawQuery == null) {
+			return new HashMap<String, String>();
+		} else {
+
+			// work with the retrieved URI
+			return scanRawForParameters(rawQuery);
+		}
+	}
+
+	/**
+	 * Gets just the raw-query, i.e. {@code value=7&test=1}.
+	 * 
+	 * @param request
+	 *            the {@code HttpRequest} to read from
+	 * 
+	 * @return the raw-query
+	 */
+	public static String getRawQuery(final HttpRequest request) {
+
+		// check the request
+		final URI uri = getUri(request);
+
+		// check the uri and it's raw query
+		final String rawQuery;
+		if (uri == null || (rawQuery = uri.getRawQuery()) == null) {
+			return null;
+		}
+		return rawQuery;
+	}
+
+	/**
+	 * Gets just the path, i.e. {@code /folder/file.html} or
+	 * {@code /folder/file.html}.
+	 * 
+	 * @param request
+	 *            the {@code HttpRequest} to read from
+	 * 
+	 * @return the path used
+	 */
+	public static String getPath(final HttpRequest request) {
+
+		// check the request
+		final URI uri = getUri(request);
+
+		// check the uri and it's raw query
+		final String path;
+		if (uri == null || (path = uri.getPath()) == null) {
+			return null;
+		}
+
+		if (path.startsWith("/")) {
+			return path.substring(1);
+		} else {
+			return path;
+		}
+	}
+
+	/**
+	 * Method to get the {@code URI} from the {@code HttpRequest}.
+	 * 
+	 * @param request
+	 *            the request to get the {@code URI} from
+	 * 
+	 * @return the {@code URI} of the request
+	 */
+	public static URI getUri(final HttpRequest request) {
+
+		// check the request
+		if (request == null) {
+			return null;
+		}
+
 		// get the URI
 		final URI uri;
 		try {
@@ -160,14 +234,7 @@ public class RequestHandlingUtilities {
 			throw new IllegalStateException("Unexpected exception thrown", e);
 		}
 
-		// check the uri and it's raw query
-		final String rawQuery;
-		if (uri == null || (rawQuery = uri.getRawQuery()) == null) {
-			return new HashMap<String, String>();
-		}
-
-		// work with the retrieved URI
-		return scanRawForParameters(rawQuery);
+		return uri;
 	}
 
 	/**
