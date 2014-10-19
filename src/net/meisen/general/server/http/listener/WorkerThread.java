@@ -52,7 +52,9 @@ public class WorkerThread extends Thread {
 
 		final HttpContext context = new BasicHttpContext(null);
 		try {
-			httpService.handleRequest(conn, context);
+			while (!Thread.interrupted() && this.conn.isOpen()) {
+				httpService.handleRequest(conn, context);
+			}
 		} catch (final ConnectionClosedException ex) {
 			if (LOG.isTraceEnabled()) {
 				LOG.trace("Client closed the connection.");
