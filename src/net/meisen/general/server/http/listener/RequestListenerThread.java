@@ -76,6 +76,6 @@ public class RequestListenerThread extends AcceptListenerThread {
 		// create the connection
 		final HttpServerConnection conn = connFactory.createConnection(socket);
 
-		return new WorkerThread(httpService, conn);
+		return new WorkerThread(httpService, conn, socket);
 	}
 }

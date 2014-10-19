@@ -1,6 +1,7 @@
 package net.meisen.general.server.http.listener;
 
 import java.io.IOException;
+import java.net.Socket;
 
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpException;
@@ -17,7 +18,8 @@ import org.slf4j.LoggerFactory;
  * @author pmeisen
  * 
  */
-public class WorkerThread extends Thread {
+public class WorkerThread extends
+		net.meisen.general.server.listener.utility.WorkerThread {
 	private final static Logger LOG = LoggerFactory
 			.getLogger(WorkerThread.class);
 
@@ -32,13 +34,15 @@ public class WorkerThread extends Thread {
 	 *            the <code>HttpService</code> to be used
 	 * @param conn
 	 *            the <code>HttpServerConnection</code> to use
+	 * @param socket
+	 *            the socket used for the connection
 	 * 
 	 * @see HttpService
 	 * @see HttpServerConnection
 	 */
 	public WorkerThread(final HttpService httpService,
-			final HttpServerConnection conn) {
-		super();
+			final HttpServerConnection conn, final Socket socket) {
+		super(socket);
 
 		this.httpService = httpService;
 		this.conn = conn;
@@ -77,5 +81,4 @@ public class WorkerThread extends Thread {
 			}
 		}
 	}
-
 }
