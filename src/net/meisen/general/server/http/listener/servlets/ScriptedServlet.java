@@ -6,6 +6,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
 
 import net.meisen.general.genmisc.exceptions.registry.IExceptionRegistry;
 import net.meisen.general.genmisc.types.Files;
@@ -127,13 +128,11 @@ public class ScriptedServlet implements IServlet {
 			final HttpContext context) {
 
 		// remove all bindings for the engine
-		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-
-		// add the bindings
-		engine.put("request", request);
-		engine.put("response", response);
-		engine.put("context", context);
-		engine.put("storage", storage);
+		final ScriptContext ctx = new SimpleScriptContext();
+		ctx.setAttribute("request", request, ScriptContext.ENGINE_SCOPE);
+		ctx.setAttribute("response", response, ScriptContext.ENGINE_SCOPE);
+		ctx.setAttribute("context", context, ScriptContext.ENGINE_SCOPE);
+		ctx.setAttribute("storage", storage, ScriptContext.ENGINE_SCOPE);
 
 		// check if we have to read a file or if the script is already known
 		String script;
@@ -157,7 +156,7 @@ public class ScriptedServlet implements IServlet {
 		// if we have a script execute
 		if (script != null) {
 			try {
-				engine.eval(script);
+				engine.eval(script, ctx);
 			} catch (final ScriptException ex) {
 				exceptionRegistry.throwException(
 						ScriptedServletException.class, 1003, ex,
