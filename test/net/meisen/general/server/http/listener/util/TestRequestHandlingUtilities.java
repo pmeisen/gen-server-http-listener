@@ -168,13 +168,13 @@ public class TestRequestHandlingUtilities {
 	@Test
 	public void testSingleParameter() throws UnsupportedEncodingException {
 		final String url = "/test?alles="
-				+ URLEncoder.encode("es ist super mit = äüö", "UTF8");
+				+ URLEncoder.encode("es ist super mit = Ã¤Ã¼Ã¶", "UTF8");
 
 		// get the map
 		@SuppressWarnings("unchecked")
 		final HashMap<String, String> map = (HashMap<String, String>) fire(url);
 		assertEquals(1, map.size());
-		assertEquals("es ist super mit = äüö", map.get("alles"));
+		assertEquals("es ist super mit = Ã¤Ã¼Ã¶", map.get("alles"));
 	}
 
 	/**
@@ -209,7 +209,7 @@ public class TestRequestHandlingUtilities {
 
 		// define the parameters to be send via post
 		final String urlParameters = "param1=a&param2=b&param3="
-				+ URLEncoder.encode("es ist super mit = äüö", "UTF8");
+				+ URLEncoder.encode("es ist super mit = Ã¤Ã¼Ã¶", "UTF8");
 
 		// write the post stuff to the connection
 		final OutputStreamWriter writer = new OutputStreamWriter(
@@ -225,7 +225,7 @@ public class TestRequestHandlingUtilities {
 		final HashMap<String, String> params = (HashMap<String, String>) o;
 		assertEquals(params.get("param1"), "a");
 		assertEquals(params.get("param2"), "b");
-		assertEquals(params.get("param3"), "es ist super mit = äüö");
+		assertEquals(params.get("param3"), "es ist super mit = Ã¤Ã¼Ã¶");
 
 		// close connection
 		connection.disconnect();
@@ -248,7 +248,7 @@ public class TestRequestHandlingUtilities {
 		// add a cookie
 		BasicClientCookie cookie;
 		cookie = new BasicClientCookie("myCookie1",
-				"myValue1 contains äüö \\ \" values");
+				"myValue1 contains Ã¤Ã¼Ã¶ \\ \" values");
 		cookie.setDomain("localhost");
 		cookieStore.addCookie(cookie);
 		cookie = new BasicClientCookie("myCookie2", "myValue2");
@@ -293,7 +293,7 @@ public class TestRequestHandlingUtilities {
 		assertEquals(4, cookies.size());
 
 		assertEquals(cookies.get("myCookie1"),
-				"myValue1 contains äüö \\ \" values");
+				"myValue1 contains Ã¤Ã¼Ã¶ \\ \" values");
 		assertEquals(cookies.get("myCookie2"), "myValue2");
 		assertEquals(cookies.get("myCookie3"), "");
 		assertEquals(cookies.get("myCookie4"), "");

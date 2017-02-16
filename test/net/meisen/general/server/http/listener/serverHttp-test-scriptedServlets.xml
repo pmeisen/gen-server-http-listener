@@ -8,8 +8,8 @@
 
   <connector port="10000" listener="HTTP">
   	<e:extension>
-  	  <servlet urlmatcher="/firstScript" reloadfile="false" scriptfile="${java.io.tmpdir}\test_10000.js">net.meisen.general.server.http.listener.servlets.ScriptedServlet</servlet>
-      <servlet urlmatcher="/reloadScript" reloadfile="true" scriptfile="${java.io.tmpdir}\test_10000.js">net.meisen.general.server.http.listener.servlets.ScriptedServlet</servlet>
+  	  <servlet urlmatcher="/firstScript" reloadfile="false" scriptfile="${java.io.tmpdir}${file.separator}test_10000.js">net.meisen.general.server.http.listener.servlets.ScriptedServlet</servlet>
+      <servlet urlmatcher="/reloadScript" reloadfile="true" scriptfile="${java.io.tmpdir}${file.separator}test_10000.js">net.meisen.general.server.http.listener.servlets.ScriptedServlet</servlet>
       <servlet>
       	<script>
 			response.setStatusCode(org.apache.http.HttpStatus.SC_OK);

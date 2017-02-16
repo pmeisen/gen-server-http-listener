@@ -244,7 +244,7 @@ public class TestFileHandler {
 
 		// create the file
 		final File tmpDir = new File(testDir, "doc");
-		assertTrue(tmpDir.mkdirs());
+		assertTrue(tmpDir.exists() || tmpDir.mkdirs());
 		assertTrue(new File(testDir, "doc/index.html").createNewFile());
 
 		final FileHandler h = new FileHandler();
@@ -254,7 +254,7 @@ public class TestFileHandler {
 		final File file = h.determineFile("/doc/index.html");
 
 		// check the retrieved file
-		assertEquals(new File(testDir, "doc\\index.html"), file);
+		assertEquals(new File(testDir, "doc\\index.html").getCanonicalFile(), file);
 		assertTrue(Files.deleteDir(tmpDir));
 	}
 
@@ -287,11 +287,11 @@ public class TestFileHandler {
 
 		// check without sub-folder
 		file = h.determineFile("/doc/index.html");
-		assertEquals(new File(testDir, "index.html"), file);
+		assertEquals(new File(testDir, "index.html").getCanonicalFile(), file);
 
 		// check with sub-folder
 		file = h.determineFile("/doc/afolder/index.html");
-		assertEquals(new File(testDir, "/afolder/index.html"), file);
+		assertEquals(new File(testDir, "/afolder/index.html").getCanonicalFile(), file);
 		assertTrue(tmpFile.delete());
 		assertTrue(Files.deleteDir(tmpDir));
 	}
@@ -325,11 +325,11 @@ public class TestFileHandler {
 
 		// check without sub-folder
 		file = h.determineFile("/doc/sub/fileSample.html");
-		assertEquals(new File(testDir, "fileSample.html"), file);
+		assertEquals(new File(testDir, "fileSample.html").getCanonicalFile(), file);
 
 		// check with sub-folder
 		file = h.determineFile("/doc/sub/another/fileSample.html");
-		assertEquals(new File(testDir, "another/fileSample.html"), file);
+		assertEquals(new File(testDir, "another/fileSample.html").getCanonicalFile(), file);
 
 		assertTrue(tmpFile.delete());
 		assertTrue(Files.deleteDir(tmpDir));
@@ -396,23 +396,23 @@ public class TestFileHandler {
 
 		// check simple retrieval
 		file = h.determineFile("/doc/normalized.file");
-		assertEquals(new File(tmpDir, "1/normalized.file"), file);
+		assertEquals(new File(tmpDir, "1/normalized.file").getCanonicalFile(), file);
 
 		// check specific retrieval of a file which is only in one location
 		file = h.determineFile("/doc/normalized_3.file");
-		assertEquals(new File(tmpDir, "3/normalized_3.file"), file);
+		assertEquals(new File(tmpDir, "3/normalized_3.file").getCanonicalFile(), file);
 
 		// check specific retrieval of a file which is available multiple times
 		file = h.determineFile("/doc/normalized_even.file");
-		assertEquals(new File(tmpDir, "2/normalized_even.file"), file);
+		assertEquals(new File(tmpDir, "2/normalized_even.file").getCanonicalFile(), file);
 
 		// check a default name
 		file = h.determineFile("/doc/");
-		assertEquals(new File(tmpDir, "9/" + defName), file);
+		assertEquals(new File(tmpDir, "9/" + defName).getCanonicalFile(), file);
 
 		// check the main-folder
 		file = h.determineFile("/doc/aMainFile.file");
-		assertEquals(new File(testDir, "aMainFile.file"), file);
+		assertEquals(new File(testDir, "aMainFile.file").getCanonicalFile(), file);
 
 		// cleanUp
 		assertTrue(tmpFile.delete());
@@ -479,7 +479,7 @@ public class TestFileHandler {
 
 		// check without sub-folder
 		file = h.determineFile("/file/matchwhatsoever");
-		assertEquals(rndFile, file);
+		assertEquals(rndFile.getCanonicalFile(), file);
 	}
 
 	/**

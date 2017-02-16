@@ -98,8 +98,7 @@ public class ScriptedServlet implements IServlet {
 				script = scriptFileName;
 			} else {
 				final File scriptFile = new File(scriptFileName);
-				if (!scriptFile.exists() || !scriptFile.isFile()
-						|| !scriptFile.canRead()) {
+				if (!scriptFile.exists() || !scriptFile.isFile() || !scriptFile.canRead()) {
 					exceptionRegistry.throwException(
 							ScriptedServletException.class, 1001, scriptFile);
 				}
