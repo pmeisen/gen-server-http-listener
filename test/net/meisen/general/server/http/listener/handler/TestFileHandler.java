@@ -254,7 +254,7 @@ public class TestFileHandler {
 		final File file = h.determineFile("/doc/index.html");
 
 		// check the retrieved file
-		assertEquals(new File(testDir, "doc\\index.html").getCanonicalFile(), file);
+		assertEquals(new File(new File(testDir, "doc"), "index.html").getCanonicalFile(), file);
 		assertTrue(Files.deleteDir(tmpDir));
 	}
 
