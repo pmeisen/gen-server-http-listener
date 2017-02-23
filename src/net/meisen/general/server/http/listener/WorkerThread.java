@@ -64,10 +64,10 @@ public class WorkerThread extends
 				LOG.trace("Client closed the connection.");
 			}
 		} catch (final IOException ex) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("I/O error while handling connection (more details on TRACE level).");
-			} else if (LOG.isTraceEnabled()) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("I/O error while handling connection.", ex);
+			} else if (LOG.isDebugEnabled()) {
+				LOG.debug("I/O error while handling connection (more details on TRACE level).");
 			}
 		} catch (final HttpException ex) {
 			if (LOG.isErrorEnabled()) {
