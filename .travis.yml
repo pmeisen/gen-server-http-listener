@@ -11,13 +11,18 @@ env:
     - secure: XLDX9CdlAz1TsW1PMuqaXx+Y38Fd1TZJk3FsDhb9MeaauGkdqqlv4dWubUDMGG8X6feaQL/AKQF+mquXcC7owLtL8HEuiFlOaf5KszDihhDilsS5cDtBV0HlyoVPNDWBuU+WLbnEv10d+WV+zAydNxeo+bssKuvRsHXwpC4PPmBHwu/5DTm6662o5J0ikWsL/PGL6X6h/KwYWrmLU3NPSzu86jrD4NFLW++b0vy1JwLx2+ppqgV+XRhEF2m59owmZk6dVfQTAx1BM5Gyx3T56tOlsnyDzXlMA7xoocGetuKT47H+zDuJ63VWtnxpMl9p+qlOzKIFqLYhoskjfjXl6s1rDW5sS9EsTiXtbF5jegLM8bIqxNlIxaDmBYnRRLeJRR7OZQi+h5y9iNGfRGcFcBt9wW6i31jt47DNkfL0psvWbYZmhdtLi/mww4ThmEsuLbX72Gct/WGE+TwT1ndg7gHRYD2CxsEuKZbaX5pweK/c19QE3nfaBXT56rCk+Zb3jfnQcXkPWD+AOFJu2kUltW6hPyfZKrxa2IHOrL55s3UzIsquJ2rIPH31LnGFZBbB+Gw/4OGxO4p1iEsZhyay3RwyHpMNRu2ews7hOmkxDfKIy1Hb2jptaKjF+GzbDcc0RkH2FMkHf2+JCSeeH1X2IsSooepJXbrKsm+Tmi4ZozQ=
     - secure: X0PwZQkXRnoDC8OVNVxIzV7gwYNQEW8RTuMK9Tw6/o06waxee9ft8M2mPVk8slt0UI/UinuKF/aNwc53hNoxWq50CADn60f0eJRQHN31SzXv2qdqbbhj5wa8JFJmihs4V8dYKUzZ7arng7EZkKsVASt2F2zt3HysZ0WGRWMjQ/+8CM3mhFjBSHD9WKHicymDHgklsmQwFQVAN3fO5mctaaYRQI0vHJqn+S5C5vR1AQ5WVsWtlyZ+/1ppmj4nweegi6xiuukKTI/K5G3gpaM4+t2N2bxwH04LpgqiifMNznro12PMnwhhHiVlNEvYJ7OapDMVV8YxTngpyNJ97F1TQH+i6KWCM30SQXweG37EsPvVCIjHW/4lHmvBBOkt/+Kb+ozcIuCUzBBUU3Us88+dJeAx47njrayliHJ0k1ulXWqtMSEva+oDBoHk8LlnzLL0qohQTCJohjIt0EmJImgDz9k02Gz9yXgO8PfmgZaWg9ByokvAhXFMPx/ws5lMNKjmVLSefPcInGEFW7Rlv+ELgNJv0cNY2G3bgrmYP/RQigjHgzIwaNWl9DrsHbZc5JSLuky05BqM5v/OSXb1bL0mpImFz9n3EymjRCqV5Vkc9hi9HpG10JJyzywryM7LTFPj7tVLAk0H/2m6txMghZ1K9FJThV2RLa7JJwFhYvYSc0w=
     - secure: FR1DSxYE6z9ffnVIuvHQfa53e2NaHyV1K9VMtkD4HNOtl/4Lop16ibPCbCko3rmAa7FfLDdD52Y+IBAIYvSfM3RDQ5c+O7lz1uQMdGp6Qb2oxQLbLliBd1RFvMehJ3XahiFVPjjVIne5vdUCUHKYNj9glbIiibniSakDa1baNZWemohV7yma9kHHNDo+itNHkOkbeTBVA8BuiMV7pGLDY6/1LjQLkSu5fs4KClovcLZLBpExtCh9Zar2tKtYWrDH7jiQNGQx/w4Mh4NuKVSwBdfJuFypoWs4cEuS/QBlfi/0jCDWmtjm/N+Lg6YKF0e/Nz92LF6gsBibSZL0VuRoMMiwac4Qv3D4dSCC0Cnic1ua6WDYx1695cYuTLNV0ET4w02fTPyOsymz4XsZ7tylXnCqcOePOcD/4S1sqnkfNDwDYwSPBdcWR+jaCCh+8P5gZa3WQsGg88dRYiD+PeSwE2z/iPeTYqobHqJVdkAl+LtJ2mBJ2eX+V3f/IKh+w2ynhBPU3pGxy5mEfF/jy7T6o2yO7qHAc0a1qBsVG2yyeXocaMhvVmY57hflbVjcdHlg+Ia2WdB6JPrRLVYnRqN/Pm0Ux02t2MOg+FZByd4t7zjoWXLphAUOXYlpKMH9wKCt8+cVcQUQR+EeRWhTrWu5lQyOvoqtoA9JV5ObbyQ/Idw=
-    - GITHUB_URL=https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/pmeisen/tida-m2
-    - MAVEN_M2=$HOME/.m2
+    - GITHUB_URL=https://github.com/pmeisen/tida-m2
+    - GITHUB_CREDENTIALS=~/.git-credentials
+    - MAVEN_M2=~/.m2
 
 before_install:
   - git config --global user.name "$GITHUB_USER"
   - git config --global user.email "$GITHUB_EMAIL"
   - git config --global push.default matching
+  - git config --global credential.helper store --file=$GITHUB_CREDENTIALS
+
+  - touch $GITHUB_CREDENTIALS
+  - echo https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/pmeisen/tida-m2 > $GITHUB_CREDENTIALS
 
   - wget https://github.com/pmeisen/tida-workspace/archive/master.zip -O /tmp/master.zip
   - unzip -o /tmp/master.zip -d ../
@@ -36,5 +41,5 @@ after_success:
   - cd $MAVEN_M2
   - git add .
   - git commit -m "Travis automated build $TRAVIS_BUILD_NUMBER ($TRAVIS_BUILD_ID)"
-  - git push $GITHUB_URL >/dev/null
+  - git push $GITHUB_URL
   - cd $TRAVIS_BUILD_DIR
